@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block hed %}
+    <!-- قم بإضافة ملفات الـ CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<!-- قم بإضافة ملفات الجافاسكربت -->
+
+{% endblock %}
+{% block css %}
+
+<style>
+    .agent-info { background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .agent-info p { color: #333; margin-bottom: 10px; }
+    .agent-info i { color: #17a2b8; margin-right: 5px; }
+    #invoice-form { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    #invoice-table th, #invoice-table td { vertical-align: middle; }
+    .btn-danger { margin-left: 10px; }
+    .form-group { margin-bottom: 20px; }
+    .btn-primary, .btn-success { width: 100%; }
+</style>
+    <style>
+
+    .form-control, .btn, select {
+        border-radius: 0.25rem; /* Slightly rounded borders for input fields and buttons */
+        border: 1px solid #ced4da; /* Standard border */
+    }
+    .form-control:focus {
+        border-color: #4d90fe; /* Highlight focus */
+        box-shadow: 0 0 0 0.2rem rgba(77, 144, 254, 0.25); /* Add a subtle shadow */
+    }
+    .btn-primary, .btn-success, .btn-danger {
+        color: #fff; /* White text for buttons */
+        border: none; /* No border for buttons */
+        transition: background-color 0.15s; /* Smooth transition for background color */
+    }
+    .btn-primary:hover, .btn-success:hover, .btn-danger:hover {
+        opacity: 0.85; /* Slight transparency on hover */
+    }
+    .btn-primary, .btn-success {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for buttons */
+    }
+    .agent-info, #invoice-form {
+        border: none; /* Remove border */
+        background-color: #ffffff; /* White background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Soft shadow */
+    }
+    #invoice-table {
+        width: 100%; /* Full width table */
+        border-collapse: separate; /* Use separate border styling */
+        border-spacing: 0; /* No space between borders */
+        margin-top: 1rem; /* Margin top for spacing */
+    }
+    #invoice-table th, #invoice-table td {
+        padding: 0.5rem; /* Padding for table cells */
+        text-align: left; /* Align text to the left */
+    }
+    #invoice-table thead th {
+        background-color: #f8f9fa; /* Light background for thead */
+        border-bottom: 2px solid #dee2e6; /* Stronger bottom border */
+    }
+    #invoice-table tbody tr:hover {
+        background-color: #f2f2f2; /* Light grey background on hover */
+    }
+    .table-responsive {
+        overflow-x: auto; /* Allow table to scroll on small screens */
+    }
+    .select2-container--default .select2-selection--single {
+        height: calc(2.25rem + 2px); /* Standard height for select2 */
+        padding: 0.375rem 0.75rem; /* Padding to match other inputs */
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.6; /* Line height for select2 content */
+    }
+</style>
+
+
+{% endblock %}
+
+
+{% block con %}
+
+<div>
+<form id="invoice-form">
+    <div class="form-group">
+        <label for="agent-select"> <i style="color: green" class="fas fa-user-tie"></i> اسم التاجر </label>
+        <select id="agent-select" class="form-control" onchange="updateAgentInfo()">
+        <option data-name="بدون اسم"><<<<<< أختر التاجر</option>
+            {% for agent in agents %}
+           <option data-name="{{ agent.name }}" data-phone="{{ agent.phone }}" data-address="{{ agent.address }}">{{ agent }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="product-select"> <i style="color: orangered" class="fas fa-box"></i> المنتجات </label>
+        <select id="product-select" class="form-control">
+            {% for pro in products %}
+                {% if pro.quantity_in_stock > 0 %}
+           <option data-price="{{ pro.cost_price }}" data-count="{{ pro.quantity_in_stock }}" data-name="{{ pro.name }}" data-pakge="{{ pro.pakge }}">{{ pro }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <button type="button" class="btn btn-primary" onclick="addProduct()"><i class="fas fa-plus"></i> إضافة المنتج</button>
+
+    <table id="invoice-table" class="table">
+        <thead>
+            <tr style="font-size: 12px">
+    <th ><i class="fas fa-box-open"></i> المنتج </th>
+    <th><i class="fas fa-tag"></i> السعر للقطعة </th>
+    <th><i class="fas fa-warehouse"></i> في المخزن </th>
+    <th><i class="fas fa-cart-plus"></i> الكمية المطلوبة </th>
+     <th>نسبة الخصم</th>
+      <th>الكمية ك بعد الخصم</th>
+       <th>التعبئه</th>
+        <th>الكميه بالوحدات</th>
+    <th><i class="fas fa-calculator"></i> التكلفة</th>
+    <th><i class="fas fa-trash"></i> إزالة</th>
+</tr>
+
+        </thead>
+        <tbody>
+            <!-- المنتجات المضافة ستظهر هنا -->
+        </tbody>
+    </table>
+<div class="form-group align-items-center">
+    <div class="col-3">
+        <label for="total-amount">المبلغ الكلي:</label>
+        <input type="text" id="total-amount" class="form-control" disabled>
+    </div>
+    <div hidden="" class="col-2 mt-2">
+        <label for="payment_type">نوع التسديد:</label>
+        <select id="payment_type" class="form-control">
+            <option selected value="بيع بالأجل">بيع بالأجل</option>
+        </select>
+    </div>
+</div>
+ <div class="agent-info" style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <p style="color: #333;">
+        <i class="fas fa-user-tie" style="color: #17a2b8;"></i>
+        اسم التاجر: <span id="agent-name" style="font-weight: bold;"></span>
+    </p>
+    <p style="color: #333;">
+        <i class="fas fa-phone" style="color: #28a745;"></i>
+        هاتف التاجر: <span id="agent-phone" style="font-weight: bold;"></span>
+    </p>
+    <p style="color: #333;">
+        <i class="fas fa-map-marker-alt" style="color: #dc3545;"></i>
+        عنوان التاجر: <span id="agent-address" style="font-weight: bold;"></span>
+    </p>
+</div>
+<div class="form-group">
+    <label for="notes"><i class="fas fa-pencil-alt" style="color: #17a2b8;"></i> الملاحظات </label>
+    <textarea id="notes" class="form-control" rows="3"></textarea>
+</div>
+    <button  id="ssu" type="submit" class="btn btn-success">إنشاء الفاتورة</button>
+</form>
+</div>
+
+{% endblock %}
+
+{% block js %}
+  <script>
+function addProduct() {
+    var selectedProduct = $('#product-select option:selected');
+    var productName = selectedProduct.data('name');
+    var pricePerUnit = selectedProduct.data('price');
+    var quantityInStock = selectedProduct.data('count');
+    var pakge = selectedProduct.data('pakge');
+
+    addProductToTable(productName, pricePerUnit, quantityInStock,pakge);
+}
+function updateTotalAmount() {
+    var total = 0;
+    $('#invoice-table .row-total').each(function() {
+        total += parseFloat($(this).text());
+    });
+    $('#total-amount').val(total.toFixed(2));
+}
+function addProductToTable(productName, pricePerUnit, quantityInStock,pkage) {
+    var table = $('#invoice-table tbody');
+    var rowCount = $('#invoice-table tbody tr').length + 1;
+    var rowId = 'product-row-' + rowCount;
+
+    var price = parseFloat(pricePerUnit).toFixed(2);
+
+    var row = `<tr id="${rowId}">
+        <td style="width: 200px">${productName}</td>
+        <td>${price}</td>
+        <td>${quantityInStock}</td>
+        <td><input style="width: 70px" type="number" min="0.1" step="0.1" class="form-control quantity" value="1" onchange="updateRowTotal('${rowId}')" /></td>
+         <td style="display: flex;align-items: center;width: 100%"><input style="width: 70px;padding: 4px;margin: 0"  type="number" min="0" max="100" step="0.1" value="0" class="form-control discount" onchange="updateQuantityAfterDiscount('${rowId}')" />%</td>
+        <td class="quantity-after-discount">1</td>
+        <td class="row_pkage">${pkage}</td>
+        <td class="row_pkage_total">0</td>
+        <td class="row-total">${price}</td>
+        <td><button type="button" class="btn btn-danger" onclick="removeProduct('${rowId}')">إزالة</button></td>
+    </tr>`;
+
+    table.append(row);
+    updateTotalAmount();
+}
+
+function updateRowTotal(rowId) {
+    var row = $('#' + rowId);
+    var pricePerUnit = parseFloat(row.find('td:nth-child(2)').text());
+    var quantity = parseFloat(row.find('.quantity').val());
+    var discount = parseFloat(row.find('.discount').val()) / 100;
+    var quantityAfterDiscount = quantity + (quantity * discount); // زيادة الكمية بنسبة الخصم
+    var rowTotal = pricePerUnit * quantity; // استخدام السعر الأصلي للوحدة
+    var row_pkage = parseInt(row.find('td:nth-child(7)').text())
+    var  row_pkage_total = row_pkage * quantityAfterDiscount
+
+    row.find('.row-total').text(rowTotal.toFixed(2)); // تحديث الإجمالي للصف
+    row.find('.row_pkage_total').text(row_pkage_total.toFixed());
+    updateTotalAmount(); // تحديث المبلغ الإجمالي
+}
+
+
+function removeProduct(rowId) {
+    $('#' + rowId).remove();
+    updateTotalAmount();
+}
+
+
+
+function updateQuantityAfterDiscount(rowId) {
+    var row = $('#' + rowId);
+    var quantity = parseFloat(row.find('.quantity').val());
+    var discount = parseFloat(row.find('.discount').val()) / 100;
+    var bonusQuantity = quantity * discount;
+    var newQuantity = quantity + bonusQuantity;  // تغيير هنا لإضافة الكمية
+
+    row.find('.quantity-after-discount').text(newQuantity.toFixed(2));
+
+    updateRowTotal(rowId);
+}
+
+
+function updateAgentInfo() {
+    var selectedAgent = $('#agent-select option:selected');
+    var agentName = selectedAgent.data('name');
+    var agentPhone = selectedAgent.data('phone');
+    var agentAddress = selectedAgent.data('address');
+
+    $('#agent-name').text(agentName);
+    $('#agent-phone').text(agentPhone);
+    $('#agent-address').text(agentAddress);
+}
+</script>
+
+ <script>
+    document.getElementById('invoice-form').onsubmit = function(e) {
+        e.preventDefault(); // منع النموذج من الإرسال التقليدي
+
+        // جمع بيانات الوكيل
+        var selectedAgent = $('#agent-select option:selected');
+        var agentName = encodeURIComponent(selectedAgent.data('name'));
+        var payment = $('#payment_type').val()
+
+        // جمع بيانات المنتجات من الجدول
+        var productsData = [];
+        $('#invoice-table tbody tr').each(function() {
+            var productName = encodeURIComponent($(this).find('td:first').text());
+            var quantity = $(this).find('.quantity').val();
+            var quantity_after = $(this).find('.quantity-after-discount').text();
+            var sellingPrice = encodeURIComponent($(this).find('td:nth-child(2)') .text()); // تأكد من أن هذا هو العمود الصحيح
+            var discount = $(this).find('.discount').val();
+            var pkage_total = $(this).find('.row_pkage_total').text();
+            productsData.push('product_name=' + productName + '&quantity=' + quantity + '&selling_price=' + sellingPrice + '&quantity_after=' + quantity_after + '&discounts=' + discount + '&pkage_total=' + pkage_total);
+        });
+
+        // جمع المبلغ الإجمالي
+        var totalAmount = encodeURIComponent($('#total-amount').val());
+        var notes = encodeURIComponent($('#notes').val());
+
+        // إنشاء استعلام URL
+        var queryString = 'agent_name=' + agentName +'&'+ 'pyment=' + payment + '&' + productsData.join('&') + '&total_amount=' + totalAmount + '&notes=' + notes
+
+        // إعادة توجيه المتصفح إلى URL الخادم مع الاستعلام
+        window.location.href = '/getbils?' + queryString;
+    }
+
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#agent-select').select2(); // تفعيل Select2 على قائمة التاجر
+    $('#product-select').select2(); // تفعيل Select2 على قائمة المنتجات
+});
+</script>
+
+
+
+
+
+{% endblock %}

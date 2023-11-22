@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    .container {
+        max-width: 100%;  // توسيع الحاوية
+    }
+    .card-header {
+        background-color: #007bff;  // تغيير لون الخلفية للرأس
+        color: white;  // تغيير لون النص
+    }
+    .card-body {
+        background-color: #f8f9fa;  // لون خلفية فاتح للبطاقة
+    }
+    .table {
+        margin-top: 20px;  // إضافة مسافة بين الجدول والعناصر الأخرى
+    }
+    .table th, .table td {
+        vertical-align: middle;  // محاذاة النص في الجدول
+    }
+    td {
+        font-size: 13px;
+        font-weight: bold;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block con %}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title"><i class="fas fa-file-invoice"></i> إنشاء فاتورة</h4>
+        </div>
+        <div class="card-body" id="invoice-form">
+            <!-- معلومات الزبون -->
+            <div class="form-group">
+                <label for="customerName"><i class="fas fa-user"></i> اسم الزبون:</label>
+                <input type="text" class="form-control" id="customerName" placeholder="ادخل اسم الزبون">
+            </div>
+            <div class="form-group">
+                <label for="customerPhone"><i class="fas fa-phone"></i> رقم الهاتف:</label>
+                <input type="text" class="form-control" id="customerPhone" placeholder="ادخل رقم الهاتف">
+            </div>
+            <div class="form-group">
+                <label for="customerAddress"><i class="fas fa-map-marker-alt"></i> العنوان:</label>
+                <input type="text" class="form-control" id="customerAddress" placeholder="ادخل العنوان">
+            </div>
+
+            <!-- بنود الفاتورة -->
+            <table class="table table-bordered mt-3" id="invoice-table">
+                <thead style="font-size: 14px">
+                    <tr>
+                        <th><i class="fas fa-box"></i> اسم المنتج</th>
+                        <th><i class="fas fa-sort-numeric-up"></i> الكمية المطلوبه</th>
+                        <th><i class="fas fa-boxes"></i> الكميه بالوحدات </th>
+                        <th><i class="fas fa-tag"></i> سعر البيع للقطعة</th>
+                        <th><i class="fas fa-sort-numeric-up"></i>%  الخصم</th>
+                        <th><i class="fas fa-tag"></i> سعر البيع للقطعة بعد الخصم</th>
+                        <th><i class="fas fa-calculator"></i> التكلفة الإجمالية</th>
+                        <th><i class="fas fa-tools"></i> إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-items">
+                    <!-- سيتم ملء العناصر هنا بواسطة JavaScript -->
+                </tbody>
+            </table>
+
+            <!-- حقل الخصم -->
+            <div class="form-group">
+                <label for="discount"><i class="fas fa-percent"></i> خصم:</label>
+                <input type="number" value="0" step="1" min="0" max="100" class="form-control" id="discounttotal" placeholder="ادخل قيمة الخصم">
+            </div>
+            <div class="form-group">
+                <label for="totalAmount"><i class="fas fa-money-bill-wave"></i> إجمالي الفاتورة:</label>
+                <input type="text" class="form-control" id="totalAmountbeforediscount" value="{{ total_invoice_amount }}" readonly>
+            </div>
+            <!-- إجمالي الفاتورة -->
+            <div class="form-group">
+                <label for="totalAmount"><i class="fas fa-money-bill-wave"></i> إجمالي الفاتورة بعد الخصم:</label>
+                <input type="text" class="form-control" id="totalAmount" value="{{ total_invoice_amount }}" readonly>
+            </div>
+
+            <!-- أزرار التحكم -->
+            <button  class="btn btn-success" id="createInvoice"><i class="fas fa-check"></i> إنشاء الفاتورة</button>
+            <button type="button" class="btn btn-secondary" id="cancel"><i class="fas fa-times"></i> إلغاء</button>
+        </d>
+    </div>
+</div>
+</div>
+<script>
+// JavaScript لمعالجة البيانات
+$(document).ready(function() {
+    // يمكنك إضافة الكود هنا لملء بنود الفاتورة وحساب الإجمالي
+});
+var invoice_items = {{ invoice_items|safe }}
+
+// وظيفة لإضافة بنود الفاتورة
+function addInvoiceItems(items) {
+    var itemsHtml = '';
+    items.forEach(function(item) {
+        itemsHtml += `
+            <tr data-product-id="${item.id}">
+                <td>
+                    <img src="${item.img_product}" alt="${item.product_name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                    <span class="namepro">${item.product_name}</span>
+                </td>
+                <td class="quantity">${item.quantity}</td>
+                <td class="row_pkage_total" style="direction: rtl"> <span class="val_pakage">${item.packing_value}</span> ${item.measurement_unit} </td>
+                 <td class="sale_price_per_item">${item.sale_price_per_item}</td>
+                <td class="discount">${item.discount}%</td>
+                <td class="sale_price_per_item_after">${item.sale_price_per_item_after}</td>
+                <td class="total">${item.sale_total}</td>
+                <td><button class="btn btn-danger btn-sm delete-btn" data-product-id="${item.product_id}"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+    });
+    $('#invoice-items').html(itemsHtml);
+}
+
+$(document).on('click', '.delete-btn', function() {
+    var productId = $(this).data('product-id');
+    removeFromCart(productId);
+
+});
+
+function removeFromCart(productId) {
+
+    var cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
+    if (cart[productId]) {
+        delete cart[productId];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        var itemsFromUserUrl = "{% url 'itemsfromuser' %}";
+        var cart = JSON.parse(localStorage.getItem('cart')) || {};
+        var queryParams = $.param({products: JSON.stringify(cart)});
+        window.location.href = itemsFromUserUrl + '?' + queryParams;
+    }
+}
+
+
+
+addInvoiceItems(invoice_items);  // تأكد من توفر متغير invoice_items
+
+
+// وظيفة لحساب الإجمالي
+function calculateTotal() {
+    var total = 0;
+    // حساب الإجمالي من البنود
+    $('#invoice-items tr').each(function() {
+        var totalPerItem = parseFloat($(this).find('.total').text());
+        total += totalPerItem;
+    });
+
+    // حساب الخصم كنسبة مئوية من الإجمالي
+    var discountPercentage = parseFloat($('#discounttotal').val()) || 0;
+    var discountAmount = total * (discountPercentage / 100);
+    total -= discountAmount;
+
+    $('#totalAmount').val(total.toFixed(2));
+}
+
+
+// تحديث الإجمالي عند تغيير الخصم
+$('#discounttotal').on('change', function() {
+    calculateTotal();
+});
+
+// الوظيفة عند النقر على إنشاء الفاتورة
+$('#createInvoice').click(function() {
+    // إضافة الوظائف لإنشاء الفاتورة
+});
+
+// الوظيفة عند النقر على إلغاء
+$('#cancel').click(function() {
+    // إضافة الوظائف لإلغاء الفاتورة
+});
+</script>
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block js %}
+ <script>
+   $(document).ready(function() {
+    $('#createInvoice').click(function(e) {
+        e.preventDefault(); // منع الإجراء الافتراضي
+
+        var agentName = 'تاجر 1';
+        var payment = encodeURIComponent('بيع بالأجل'); // أو أي قيمة أخرى مطلوبة
+        var discount_total = $('#discounttotal').val()
+
+        var productsData = [];
+        $('#invoice-table tbody tr').each(function() {
+            var productName = encodeURIComponent($(this).find('td:first .namepro').text());
+            var quantity = encodeURIComponent($(this).find('.quantity').text());
+            var quantity_after = encodeURIComponent($(this).find('.sale_price_per_item_after').text());
+            var sellingPrice = encodeURIComponent($(this).find('.sale_price_per_item').text());
+            var discount = encodeURIComponent($(this).find('.discount').text());
+            var pkage_total = encodeURIComponent($(this).find('.row_pkage_total .val_pakage').text());
+            productsData.push('product_name=' + productName + '&quantity=' + quantity + '&selling_price=' + sellingPrice + '&quantity_after=' + quantity_after + '&discounts=' + discount + '&pkage_total=' + pkage_total);
+        });
+        var totalAmountbeforediscount = encodeURIComponent($('#totalAmountbeforediscount').val());
+        var totalAmount = encodeURIComponent($('#totalAmount').val());
+        var notes = encodeURIComponent($('#notes').val() || ''); // إضافة ملاحظات إذا وجدت
+
+        var queryString = 'agent_name=' + agentName + '&payment=' + payment + '&' + productsData.join('&') + '&total_amount=' + totalAmount + '&notes=' + notes + '&discount_total=' + discount_total + '&totalAmountbeforediscount=' + totalAmountbeforediscount;
+        localStorage.clear();
+        window.location.href = '/getbils?' + queryString;
+    });
+});
+
+
+</script>
+{% endblock %}

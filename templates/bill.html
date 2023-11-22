@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    .pcx {
+        padding: 2px;
+    }
+    </style>
+    <style>
+    /* التنسيق العام للصفحة */
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f4f4f4;
+}
+
+.invoice-details h2, .agent-info h4, .invoice-files h3 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* تحسين تصميم الجدول */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.table th {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+/* تحسين الأقسام */
+.invoice-summary, .agent-info, .invoice-files {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* تحسين الأزرار والأيقونات */
+.btn {
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn i {
+    margin-left: 5px;
+}
+
+/* أنماط إضافية حسب الحاجة */
+
+    </style>
+{% endblock %}
+
+
+{% block con %}
+<div class="invoice-details mb-4">
+    <h2>تفاصيل الفاتورة <i style="color: blue" class="fas fa-file-invoice-dollar"></i></h2>
+    <!-- Section for Invoice Summary -->
+    <div class="invoice-summary">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="bg-primary text-white pcx text-center rounded">
+                    <h5>الإجمالي: <span>{{ invoice.total }}</span> <i class="fas fa-coins"></i></h5>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="bg-warning text-dark pcx text-center rounded">
+                    <h5>الرصيد السابق للوكيل : <span>{{ invoice.balncagentlast }}</span> <i class="fas fa-wallet"></i></h5>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="bg-success text-white pcx text-center rounded">
+                    <h5>الرصيد الحالي: <span>{{ invoice.balncagentafter }}</span> <i class="fas fa-hand-holding-usd"></i></h5>
+                </div>
+            </div>
+        </div>
+        <!-- Agent Information -->
+        <div class="agent-info mb-3 mt-4">
+            <h4>معلومات الوكيل <i style="color: green" class="fas fa-user-tie"></i></h4>
+            <p><strong>الاسم:</strong> {{ invoice.agent.name }} <i class="fas fa-signature"></i></p>
+            <p><strong>الهاتف:</strong> {{ invoice.agent.phone }} <i class="fas fa-phone"></i></p>
+
+        </div>
+    </div>
+    <!-- Table for Invoice Items -->
+    <table class="table table-striped">
+         <table class="table">
+        <thead>
+            <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>سعر البيع</th>
+                <th>المجموع</th>
+                <th>الخصم</th>
+                <th>الكمية بعد الخصم</th>
+                <th>إجمالي العبوة</th>
+                <th>عدد العبوات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.selling_price }}</td>
+                <td>{{ item.total }}</td>
+                <td>{{ item.discount }}</td>
+                <td>{{ item.quantity_after_discount }}</td>
+                <td>{{ item.pkage_total }}</td>
+                <td>{{ item.pakge }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </table>
+
+
+<!-- Section for Invoice Files -->
+<div class="invoice-files mt-4">
+    <h3 class="mb-3">الفواتير المسددة <i class="fas fa-file-invoice-dollar"></i></h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>اسم الملف</th>
+                <th>تاريخ الإصدار</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+
+    {% for file in invoice.pdf_files.all %}
+        <tr>
+            <!-- Invoice File Name -->
+            <td>
+                {% if file.file %}
+                    {{ file.file.name }}
+                {% endif %}
+            </td>
+
+            <!-- Issue Date -->
+            <td>
+                {{ file.created_at|date:"Y-m-d H:i" }}
+            </td>
+
+            <!-- Actions for both files -->
+            <td class="text-center">
+                {% if file.file %}
+                    <a href="{{ file.file.url }}" target="_blank" class="btn btn-primary btn-sm mr-1">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+                {% endif %}
+                {% if file.receipt %}
+                    <a href="{{ file.receipt.url }}" target="_blank" class="btn btn-success btn-sm">
+                        <i class="fas fa-receipt"></i>
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3" class="text-center">لا توجد فواتير مدفوعة.</td>
+        </tr>
+    {% endfor %}
+</tbody>
+
+
+    </table>
+</div>
+
+
+
+
+</div>
+
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block js %}
+
+{% endblock %}

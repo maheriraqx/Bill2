@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    .container {
+        max-width: 100%; /* تحديد عرض الحاوية */
+        background-color: #f9f9f9; /* لون خلفية الحاوية */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* إضافة ظل للحاوية */
+        margin-top: 50px;
+    }
+
+    .form-group {
+        margin-bottom: 15px; /* تحديد المسافة بين الحقول */
+    }
+
+    label {
+        font-weight: bold; /* جعل النص غامق */
+        margin-bottom: 5px; /* المسافة بين الليبل وحقل الإدخال */
+        display: block;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da; /* إضافة حد لحقول الإدخال */
+        border-radius: 4px; /* تقريب زوايا حقول الإدخال */
+        padding: 10px; /* مساحة داخلية لحقول الإدخال */
+    }
+
+    .form-control:focus {
+        border-color: #80bdff; /* تغيير لون الحد عند التركيز */
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* إضافة ظل عند التركيز */
+    }
+
+    .btn-success {
+        color: #fff; /* لون النص */
+        background-color: #28a745; /* لون الخلفية */
+        border-color: #28a745; /* لون الحد */
+    }
+
+    .btn-success:hover {
+        color: #fff; /* لون النص عند التحويم */
+        background-color: #218838; /* لون الخلفية عند التحويم */
+        border-color: #1e7e34; /* لون الحد عند التحويم */
+    }
+
+    .fa {
+        color: #6c757d; /* لون الأيقونة */
+    }
+
+    /* تغيير لون الأيقونات عند التركيز على الحقل */
+    .form-control:focus + .fa {
+        color: #0056b3;
+    }
+
+    /* تغيير لون الأيقونات عند التحويم */
+    label:hover .fa {
+        color: #0056b3;
+    }
+
+    .form-control-file {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 5px;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block con %}
+<div class="container mt-4">
+   <!-- شريط الرصيد الحالي -->
+    <div  class="alert alert-info" role="alert" style="border-radius: 5px;direction: rtl">
+        <i class="fa fa-wallet" style="color: navy;"></i> الرصيد الحالي في الصندوق: <strong>{{ balancr|intcomma }}</strong> دينار
+    </div>
+    <h2 class="mb-4">شراء  بضاعة جديدة</h2>
+    <form id="purchaseForm" method="post" enctype="multipart/form-data" action="{% url 'add_purchase' %}">
+        {% csrf_token %}
+
+
+        <div class="form-group">
+            <label for="productName"><i style="color: green" class="fa fa-tag"></i> اسم المنتج:</label>
+            <input type="text" id="productName" name="productName" class="form-control" placeholder="أدخل اسم المنتج" list="productList">
+            <datalist id="productList">
+                <!-- سيتم ملء الخيارات هنا بواسطة الجافا سكربت -->
+            </datalist>
+        </div>
+         <div class="form-group">
+    <label for="supplierName">
+        <i style="color: #007bff" class="fas fa-handshake"></i> اسم المورد:
+    </label>
+    <select style="padding: 0;padding-left: 10px" id="supplierName" name="supplierName" class="form-control">
+        {% for supplier in suppliers %}
+        <option  selected value="{{ supplier.company_name }}">{{ supplier.company_name }}</option>
+        {% endfor %}
+    </select>
+</div>
+        <div class="form-group">
+            <label for="quantity"><i style="color: #47933a" class="fa fa-boxes"></i> الكمية:</label>
+            <input type="number" id="quantity" name="quantity" class="form-control" placeholder="أدخل الكمية">
+        </div>
+        <div class="form-group">
+            <label for="costPrice"><i style="color: #ffcc00" class="fa fa-money-bill-wave"></i> سعر التكلفة للوحدة:</label>
+            <input type="number" id="costPrice" name="costPrice" class="form-control" placeholder="أدخل سعر التكلفة للوحدة">
+        </div>
+        <div class="form-group">
+            <label for="package"><i style="color: orangered" class="fa fa-box"></i> التعبئة:</label>
+            <input type="text" id="package" name="pakage" class="form-control" placeholder="أدخل قيمة التعبئة" readonly>
+        </div>
+        <div class="form-group">
+            <label for="totalCost"><i style="color: darkblue" class="fa fa-calculator"></i> التكلفة الكلية:</label>
+            <input type="text" id="totalCost" name="totalCost" class="form-control" placeholder="سيتم حسابها تلقائيًا" readonly>
+        </div>
+        <div class="form-group">
+            <label for="note"><i class="fa fa-sticky-note"></i> ملاحظة:</label>
+            <textarea id="note" name="note" class="form-control" placeholder="أدخل أي ملاحظات هنا"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="invoiceFile"><i style="color: darkkhaki" class="fa fa-file-invoice"></i> رفع فاتورة:</label>
+            <input type="file" id="invoiceFile" name="invoiceFile" class="form-control-file">
+        </div>
+        <button type="submit" class="btn btn-success btn-lg btn-block">
+            <i class="fa fa-shopping-cart"></i> شراء
+        </button>
+    </form>
+</div>
+
+<script>
+var productsData = JSON.parse('{{ products_json|safe }}');
+console.log(productsData)
+// الدالة لملء قائمة البيانات
+function fillProductList(productsData) {
+    var productList = document.getElementById('productList');
+    productsData.forEach(function(product) {
+        console.log(product.fields.name)
+        var option = document.createElement('option');
+        option.value = product.fields.name;
+        productList.appendChild(option);
+    });
+}
+
+// تحليل JSON إلى كائن جافاسكريبت
+var productsData = JSON.parse('{{ products_json|safe }}');
+
+// إنشاء كائن لتسهيل الوصول إلى تفاصيل المنتجات
+var productsLookup = {};
+productsData.forEach(function(product) {
+    productsLookup[product.fields.name] = product.fields.pakge; // افترض أن 'package' هو الحقل للتعبئة
+});
+
+// الوظيفة لتحديث حقل التعبئة بناءً على اسم المنتج
+function updatePackagingField(productName) {
+    var packageField = document.getElementById('package'); // تأكد من وجود حقل بمعرف 'package' في النموذج الخاص بك
+
+    // التحقق من وجود المنتج في كائن البحث
+    if (productsLookup.hasOwnProperty(productName)) {
+        packageField.value = productsLookup[productName]; // عرض قيمة التعبئة للمنتج الموجود
+        packageField.setAttribute('readonly', true); // جعل الحقل للقراءة فقط
+    } else {
+        packageField.value = ''; // إفراغ الحقل إذا لم يتم العثور على المنتج
+        packageField.removeAttribute('readonly'); // جعل الحقل قابل للتعديل
+    }
+}
+
+// إضافة مستمع الأحداث إلى حقل اسم المنتج
+document.getElementById('productName').addEventListener('input', function() {
+    updatePackagingField(this.value);
+});
+
+
+
+// الدالة لحساب التكلفة الكلية
+function calculateTotalCost() {
+    var quantity = parseFloat(document.getElementById('quantity').value) || 0;
+    var costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+    var totalCost = quantity * costPrice;
+    document.getElementById('totalCost').value = totalCost.toFixed(2);
+}
+
+// البيانات المفترضة من الخادم
+window.existingProducts = JSON.parse('{{ products_json|safe }}');
+
+// استدعاء الدالات عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    fillProductList(window.existingProducts);
+
+    // إعداد المستمعين للأحداث
+    var productNameField = document.getElementById('productName');
+    if (productNameField) {
+        productNameField.addEventListener('input', function() {
+            updateFormFields(this.value);
+        });
+    }
+
+    // إعداد المستمعين لأحداث الإدخال على حقول الكمية وسعر التكلفة
+    document.getElementById('quantity').addEventListener('input', calculateTotalCost);
+    document.getElementById('costPrice').addEventListener('input', calculateTotalCost);
+});
+</script>
+
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}

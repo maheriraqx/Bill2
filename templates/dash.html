@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    /* الأنماط العامة للبطاقة */
+    .card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        font-weight: bold; /* جعل النص غامق */
+    }
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    .card-body-icon {
+        position: absolute;
+        top: -25px;
+        right: 10px;
+        opacity: 0.4;
+        font-size: 90px;
+        transform: rotate(15deg);
+    }
+    .card .card-body {
+        font-size: 1.5em; /* تكبير حجم الخط للقيم */
+    }
+    .card-footer {
+        font-weight: bold;
+    }
+    .card-footer i {
+        transition: transform 0.3s ease-in-out;
+    }
+    .card-footer:hover i {
+        transform: translateX(-5px);
+    }
+    /* تنسيق خاص بقيم المبيعات */
+    .sales-value {
+        display: block;
+        font-size: 18px; /* حجم أكبر للقيمة */
+        margin-top: 0.5em; /* تباعد أعلى */
+        margin-bottom: 0.5em; /* تباعد أسفل */
+        font-weight: bold; /* نص غامق */
+    }
+    .card-footer {
+        background: rgba(0,0,0,0.1); /* خلفية شفافة للفوتر */
+    }
+
+</style>
+{% endblock %}
+
+
+{% block con %}
+
+
+  <div class="row mt-5">
+
+ <div class="col-xl-3 col-sm-6 mb-3" style="height: 150px">
+    <div class="card text-white bg-primary o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-cash-register"></i>
+            </div>
+            <div class="mr-1">
+            <span class="sales-value">{{ todays_sales|intcomma }}</span>
+            مبيعات اليوم!
+        </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="{% url 'invoice_list' %}">
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+
+<div class="col-xl-3 col-sm-6 mb-3"  style="height: 150px">
+    <div class="card text-white bg-success o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+
+            <div class="mr-1">
+            <span class="sales-value">{{ current_month_sales|intcomma }}</span>
+            مبيعات الشهر!
+        </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="{% url 'invoice_list' %}">
+
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+
+<div class="col-xl-3 col-sm-6 mb-3"  style="height: 150px">
+    <div class="card text-white bg-warning o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+
+               <div class="mr-1">
+            <span class="sales-value">{{ current_year_sales|intcomma }}</span>
+            مبيعات السنة!
+        </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="{% url 'invoice_list' %}">
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+
+  <div class="col-xl-3 col-sm-6 mb-3" style="height: 150px">
+    <div class="card text-white bg-danger o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div class="mr-1">
+                <span class="sales-value">{{ total_debts|intcomma }}</span>
+                مجموع الديون
+            </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="{% url 'traders_list' %}">
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+<div class="col-xl-3 col-sm-6 mb-3" style="height: 150px">
+    <div class="card text-white bg-info o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="mr-1">
+                <span class="sales-value">{{ calculate_total_debts_comp|intcomma }}</span>
+                المستحقات القائمة
+            </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="{% url 'traders_list' %}">
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+
+ <div class="col-xl-3 col-sm-6 mb-3" style="height: 150px">
+    <div class="card text-white bg-primary o-hidden h-100">
+        <div class="card-body">
+            <div class="card-body-icon">
+                <i class="fas fa-file-alt"></i> <!-- أيقونة الملفات -->
+            </div>
+            <div class="card-text">
+                <div class="mr-1">
+                    <span class="data-value" style="font-size: 20px; font-weight: bold;">{{ usedMb }}MB/5000MB</span>
+                    <div>المساحة المستخدمة</div>
+                </div>
+            </div>
+        </div>
+        <a class="card-footer text-white clearfix small z-1" href="">
+            <span class="float-left">عرض التفاصيل</span>
+            <span class="float-right">
+                <i class="fas fa-angle-left"></i>
+            </span>
+        </a>
+    </div>
+</div>
+
+
+
+
+    </div>
+    <div style="width: 100%;height: 5px;background-color: rgba(0,128,0,0.6);border-radius: 100%;margin: 10px;"></div>
+<div class="chart-container" style="display: flex;justify-content: start;padding: 10px;margin-top: 5px;border-bottom: 2px solid black;border-left: 2px solid black;">
+       <div style="display: flex;justify-content: center;align-items: center;flex-direction: column;width: 30%">
+            <h5 class="chart-header">الأعلى مبيعاً   </h5>
+        <canvas class="zoom-effect" style="height: 260px;background-color: white;border-radius: 2px;width: 100%" id="topProductsChart"></canvas>
+       </div>
+    <div style="width: 70%;display: flex;align-items: center;justify-content: center;flex-direction: column;border-left: 3px solid orangered">
+        <h5 class="chart-header">الأكثر ربحاً    </h5>
+         <canvas class="zoom-effect" style="height: 260px;background-color: white;border-radius: 2px;width: 100%" id="topProfitProductsChart"></canvas>
+    </div>
+    </div>
+    
+    
+    
+{% endblock %}
+
+{% block js %}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var topProductsData = {{ top_five_monthly_sold_products | safe }};
+
+    function createChart() {
+        var ctx = document.getElementById('topProductsChart').getContext('2d');
+        var data = {
+            labels: Object.keys(topProductsData),
+            datasets: [{
+                label: 'الكميات المباعة',
+                data: Object.values(topProductsData),
+                backgroundColor: [
+                    'rgb(0,128,0)',  // أخضر
+                    'rgb(54, 162, 235)',  // أزرق
+                    'rgb(255, 206, 86)',  // أصفر
+                    'rgb(192,96,75)',  // بني
+                    'rgb(147,58,82)'  // أرجواني
+                ],
+                borderColor: [
+                    'rgb(0,128,0)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(192,96,75)',
+                    'rgb(147,58,82)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        var options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: { // تحديث هنا
+                    beginAtZero: true
+                },
+                x: { // تحديث هنا
+                    display: false
+                }
+            },
+            legend: {
+              display: false
+            }
+        };
+
+        // إنشاء رسم بياني شريطي
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    }
+
+    createChart();
+});
+
+
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var topProfitProductsData ={{ top_ten_monthly_most_profitable_products | safe }}
+
+
+    function createProfitChart() {
+        var ctx = document.getElementById('topProfitProductsChart').getContext('2d');
+        var data = {
+            labels: Object.keys(topProfitProductsData),
+            datasets: [{
+                label: 'الأرباح',
+                data: Object.values(topProfitProductsData),
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)',
+                    'rgb(233, 30, 99)',
+                    'rgb(32, 201, 151)',
+                    'rgb(0, 150, 136)',
+                    'rgb(103, 58, 183)'
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)',
+                    'rgb(233, 30, 99)',
+                    'rgb(32, 201, 151)',
+                    'rgb(0, 150, 136)',
+                    'rgb(103, 58, 183)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        var options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: { // تحديث هنا
+                    beginAtZero: true
+                },
+                x: { // تحديث هنا
+                    display: false
+
+                }
+            },
+            legend: {
+                  display: false
+            }
+        };
+
+        // إنشاء رسم بياني شريطي
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    }
+
+    createProfitChart();
+});
+
+    </script>
+
+{% endblock %}

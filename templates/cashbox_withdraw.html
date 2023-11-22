@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    /* تخصيص ألوان الأزرار */
+.btn-primary {
+    background-color: #b34b00; /* يمكنك تغيير اللون لما يتناسب مع القالب */
+}
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    color: #343a40;
+}
+
+/* تخصيص نماذج الإدخال */
+.form-control {
+    border-radius: 0.25rem; /* تقريب زوايا الحقول */
+}
+
+/* تخصيص البطاقة */
+.card {
+    border-radius: 0.5rem; /* تقريب زوايا البطاقة */
+}
+
+/* تنسيق مجموعة الإدخال */
+.input-group-text {
+    background-color: #e9ecef; /* تنسيق لون خلفية مجموعة الإدخال */
+}
+
+    </style>
+{% endblock %}
+
+
+{% block con %}
+<div class="card my-4 shadow-sm " style="border: 1px solid rgba(0,0,0,0.93)"> <!-- إضافة ظل للبطاقة -->
+    <div class="card-header bg-dark bg-gradient text-white">
+        <i style="color: #ffdd00;" class="fas fa-hand-holding-usd"></i> عملية سحب من الصندوق
+    </div>
+    <div  class="alert alert-info" role="alert" style="border-radius: 5px;direction: rtl">
+        <i class="fa fa-wallet" style="color: navy;"></i> الرصيد الحالي في الصندوق: <strong>{{ balancr|intcomma }}</strong> دينار
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'cashbox_withdraw_action' %}">
+            <div class="form-group">
+                <label for="withdraw-amount">المبلغ</label>
+                <div class="input-group mb-3"> <!-- استخدام مجموعة الإدخال لأيقونة النص -->
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i style="color: orangered" class="fas fa-coins"></i></span>
+                  </div>
+                  <input name="amount" type="number" class="form-control" id="withdraw-amount" placeholder="أدخل المبلغ المراد سحبه" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="withdraw-description">ملاحضات</label>
+                <textarea name="notes" class="form-control" id="withdraw-description" rows="3" placeholder="وصف العملية" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="withdraw-date">التاريخ</label>
+                <input type="text" class="form-control" id="withdraw-date" value="{{ request_date|date:'Y-m-d' }}" disabled>
+            </div>
+            <div class="form-group text-right">
+                <button type="submit" class="btn btn-primary">تنفيذ السحب</button>
+                <button type="reset" class="btn btn-outline-secondary">إعادة تعيين</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}

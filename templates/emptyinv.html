@@ -1,0 +1,393 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فاتورة المبيعات</title>
+     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500&display=swap" rel="stylesheet">
+  <style>
+      *{
+          direction: rtl;
+           font-family: 'Cairo', sans-serif;
+      }
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    body, h1, h2, h3, p, td, th {
+     font-family: 'Cairo', sans-serif;
+    }
+    .invoice-container {
+      max-width: 1300px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      color: black;
+      border: 1px solid #ddd;
+    }
+    .invoice-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #444;
+    }
+    .invoice-header h1 {
+      margin: 0;
+      font-size: 2.4em;
+      color: #444;
+    }
+    .sub-header {
+      font-size: 1.2em;
+      color: #555;
+    }
+    .invoice-info, .agent-info, .total-amount, .signature {
+      margin-bottom: 20px;
+    }
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice-table th, .invoice-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .invoice-table th {
+      background-color: #f2f2f2;
+      color: #333;
+    }
+    .invoice-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .total-amount, .signature {
+      text-align: right;
+    }
+    .signature-space {
+
+      padding-top: 5px;
+      margin-top: 30px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #777;
+    }
+    @media print {
+      .no-print {
+        display: none;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  </style>
+ <style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+  body, h1, h2, h3, p, td, th {
+    font-family: 'Cairo', sans-serif;
+  }
+
+  .invoice-container {
+    max-width: 1300px;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    color: black;
+    border: 1px solid #090808;
+      border-radius: 5px;
+  }
+
+  .invoice-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #444;
+  }
+
+  .invoice-header h1 {
+    margin: 0;
+    font-size: 2.4em;
+    color: #444;
+  }
+
+  .sub-header {
+    font-size: 1.2em;
+    color: #555;
+  }
+
+  .invoice-info, .agent-info, .total-amount, .signature {
+    margin-bottom: 20px;
+  }
+
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .invoice-table th, .invoice-table td {
+    border: 2px solid #090808;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .invoice-table th {
+    background-color: #f2f2f2;
+    color: #333;
+  }
+
+  .invoice-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .total-amount, .signature {
+    text-align: right;
+      border-bottom: 1px dot-dot-dash black;
+  }
+
+  .signature-space {
+
+    padding-top: 5px;
+    margin-top: 30px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9em;
+    color: #777;
+  }
+
+  @media print {
+    .invoice-container {
+      max-width: 1300px;
+      padding: 0px;
+      font-size: 10px;
+    }
+
+    .invoice-header h1 {
+      font-size: 18px;
+
+    }
+     .invoice-header span {
+      font-size: 13px;
+    }
+
+    .sub-header {
+      font-size: 12px;
+    }
+
+    .invoice-info, .agent-info {
+      font-size: 12px;
+      margin-bottom: 5px;
+        padding: 5px;
+    }
+    .invoice-info i {
+        color: green;
+    }
+    .invoice-info{
+        font-size: 17px;
+    }
+    .invoice-table th, .invoice-table td {
+      font-size: 18px;
+        font-weight: bold;
+
+        padding-top: 6px;
+        padding-bottom: 6px;
+        width: fit-content;
+        text-align: center;
+    }
+
+    .total-amount h3 {
+      font-size: 19px;
+    }
+
+    .total-amount p {
+        font-size: 18px
+    }
+    .signature-space p {
+      font-size: 14px;
+    }
+
+    .footer {
+      font-size: 8px;
+    }
+
+    .no-print {
+      display: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  }
+</style>
+ <style>
+        /* ...الأنماط الحالية... */
+        .print-header {
+            background-color: #f2f2f2; /* لون خلفية موحد */
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+         header.print-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+
+    }
+        .additional-info{
+            text-align: right;
+
+        }
+        .print-header img {
+            width: 100px;
+            height: auto;
+        }
+
+
+
+        .additional-info p {
+
+            font-size: 12px;
+        }
+
+        /* ...بقية الأنماط... */
+        *{
+            font-weight: bold;
+        }
+        body{
+            position: relative;
+
+        }
+        .watermark-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 10em; /* تكبير الأيقونة */
+    color: rgba(255, 255, 255, 0.1); /* جعل الأيقونة شفافة */
+    transform: translate(-50%, -50%); /* محاذاة الأيقونة في وسط العنصر */
+    z-index: -1; /* وضع الأيقونة في الخلفية */
+}
+.invoice-notes {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+    color: #555;
+}
+    </style>
+
+</head>
+<body>
+  <div class="invoice-container" style=";margin-right: auto;margin-left: auto;position: absolute;top:-70px;right: -70px;min-width: 1110px">
+    <!-- Header with logo if available -->
+  <div style="background-color: #f2f2f2;border-bottom: 2px solid #444;">
+
+    <header class="print-header" style="display: flex; justify-content:center; padding: 10px">
+
+            <div style="text-align: center;">
+
+                <img style="width: 260px" src="{{ Company.logo_url }}" alt="شعار الشركة">
+                <h4 style="color: #242949; font-weight: bold;">{{ Company.name }} - فرع {{ Company.branch }}</h4>
+
+            </div>
+
+        </header>
+        <div>
+            <p style="text-align: center;font-size: 16px"><i class="fas fa-user-tie"></i> السيد المحترم: <strong>{{ agent.name }}/{{ agent.address }}</strong></p>
+            <p style="text-align: center;font-size: 15px"><i class="fas fa-phone"></i> رقم الهاتف: <strong>{{ agent.phone }}</strong></p>
+        </div>
+
+</div>
+    <!-- Invoice info -->
+   <div class="invoice-info" style="text-align: center;position: absolute;top:10px;left:10px" >
+    <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-receipt"></i> رقم الفاتورة: <mark style="background-color: yellow">{{ invoice.invoice_number }}</mark></p>
+    <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-calendar-alt"></i> تاريخ الفاتورة: <strong>{{ invoice.date | date:"Y-m-d" }}</strong></p>
+     <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-clock"></i> الوقت: {{ current_time }}</p>
+        <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-user-tie"></i> منظم الفاتوره: {{ invoice.admin }}</p>
+
+</div>
+
+
+      <div style="min-height: 610px;border-bottom: 1px solid green">
+    <table class="invoice-table">
+      <thead >
+        <tr style="font-size: 13px;background-color: green;color: white">
+          <th>اسم المنتج</th>
+          <th>الكمية</th>
+          <th>السعر للقطعة</th>
+          <th>الخصم %</th>
+          <th>الكمية بعد الخصم</th>
+            <th>التعبئه</th>
+            <th>الكميه بالوحدات</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr style="font-size: 12px">
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td class="price-cell">-</td>
+          <td class="discount-cell">- %</td>
+          <td class="discount-cell">-</td>
+            <td>{{ item.pakge }}</td>
+            <td>{{ item.pkage_total }}</td>
+          <td class="price-cell">-</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="font-size: 13px; background-color: #47933a; color: white">
+            <td colspan="7" style="text-align: right;">المبلغ الإجمالي للفاتورة</td>
+            <td>-</td>
+        </tr>
+    </tfoot>
+    </table>
+      </div>
+  <!-- Payment details -->
+<div class="total-amount" style="margin-top: 20px;margin-bottom: 20px;font-size: 20px;padding: 10px">
+  <h5><i style="color: green" class="fas fa-info-circle"></i> تفاصيل الدفع:</h5>
+  <p style="font-size: 17px"><i style="color: #242949" class="fas fa-balance-scale-left"></i> الرصيد السابق: <strong class="priceT-T">-</strong> د.ع</p>
+  <p style="font-size: 17px"><i style="color: #242949" class="fas fa-balance-scale-right"></i> الرصيد الحالي: <strong class="priceT-T">-</strong> د.ع</p>
+  <p style="font-size: 17px"><i style="color: #242949" class="fas fa-coins"></i> المبلغ الإجمالي: <strong class="priceT-T">-</strong> د.ع</p>
+</div>
+<div style="height: 30px;padding-top: 20px;border-top: 1px solid silver"></div>
+<div class="signature-space" style="margin-top: 20px;text-align: right;padding: 10px">
+  <p ><i style="color: green" class="fas fa-signature"></i> التوقيع: ______________________</p>
+  <p><i style="color: green" class="fas fa-calendar-day"></i> التاريخ: ______________________</p>
+</div>
+<div class="invoice-notes">
+    <p>هام: يعتبر هذا الإيصال صحيحاً في حال عدم وجود اعتراض خلال 14 يوماً من تاريخه.</p>
+    <p>السهو والخطأ مرجوع للطرفين.</p>
+</div>
+
+   <div style="display: flex; justify-content: space-between; margin-top: 2px; padding: 10px">
+    <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-phone" style="color: #4CAF50;"></i>
+        رقم المبيعات: {{ Company.phone }}
+    </p>
+    <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-envelope" style="color: #2196F3;"></i>
+        البريد الإلكتروني: {{ Company.email }}
+    </p>
+          <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-map-marker-alt"></i> عنوان: {{ Company.address }}
+    </p>
+  </div>
+
+
+</div>
+
+</body>
+</html>

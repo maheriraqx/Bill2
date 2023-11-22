@@ -1,0 +1,246 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>كشف حساب الوكيل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <style>
+           * {
+        margin: 0;
+        padding: 0;
+       box-sizing: border-box;
+      }
+    body, h1, h2, h3, p, td, th {
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+    }
+
+
+    .a4-container23 {
+      min-width: 100%;
+      min-height: 842px;
+
+
+      background: #fff;
+      color: black;
+        margin-left: auto;
+        margin-right: auto;
+        border: 1px solid black;
+        border-radius: 5px;
+    }
+
+    header.print-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #444;
+    }
+
+    .agent-statement {
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+        margin-right: auto;
+        margin-left: auto;
+
+    }
+
+    th, td {
+      border: 1px solid #030303; /* خطوط أعرض */
+      padding: 5px; /* تباعد أكبر */
+      text-align: center;
+        white-space: nowrap;
+        font-size: 15px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .additional-info {
+      border-top: 2px solid #444;
+      padding-top: 10px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .count p {
+        padding: 5px;
+        font-size: 12px;
+        border: 1px solid black;
+        border-radius: 5px;
+        margin-top: 10px;
+        text-align: right;
+        direction: rtl;
+    }
+
+    @media print {
+      .a4-container23 {
+      width: 700px;
+      min-height: 842px;
+
+      background: #fff;
+      color: black;
+        margin-left: auto;
+        margin-right: auto;
+        border: 1px solid black;
+        border-radius: 5px;
+    }
+
+    }
+    </style>
+     <style>
+        /* ...الأنماط الحالية... */
+        .print-header, .additional-info {
+            background-color: #f2f2f2; /* لون خلفية موحد */
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .print-header img {
+            width: 100px;
+            height: auto;
+        }
+
+
+
+        .additional-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        /* ...بقية الأنماط... */
+            .invoice-info i {
+        color: green;
+    }
+    .invoice-info{
+        font-size: 17px;
+    }
+    </style>
+</head>
+<body style="width: 100vh">
+
+        <div class="a4-container23" style="min-height: 1000px;margin-left: 100px;;width: 100%;" >
+            <!-- Header with logo if available -->
+  <div style="background-color: #f2f2f2;border-bottom: 2px solid #444;">
+
+    <header class="print-header" style="display: flex; justify-content:center; padding: 10px">
+
+            <div style="text-align: center;">
+
+                <img style="width: 260px" src="{{ Company.logo_url }}" alt="شعار الشركة">
+                <h4 style="color: #242949; font-weight: bold;">{{ Company.name }} - فرع {{ Company.branch }}</h4>
+
+            </div>
+
+        </header>
+        <div>
+            <p style="text-align: center;font-size: 16px"><i class="fas fa-user-tie"></i> السيد المحترم: <strong>{{ agent.name }}/{{agent.address }}</strong></p>
+            <p style="text-align: center;font-size: 15px"><i class="fas fa-phone"></i> رقم الهاتف: <strong>{{ agent.phone }}</strong></p>
+        </div>
+
+</div>
+    <!-- Invoice info -->
+   <div class="invoice-info" style="text-align: center;position: absolute;top:10px;left:18px;" >
+    <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-receipt"></i> رقم المستند: <mark style="background-color: yellow">-</mark></p>
+    <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-calendar-alt"></i> تاريخ المستند: <strong>{{ today_date }}</strong></p>
+     <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-clock"></i> الوقت: {{ current_time }}</p>
+        <p style="text-align: right;border: 1px solid black;border-radius: 3px;padding: 3px"><i class="fas fa-user-tie"></i> منظم المستند: {{ admin }}</p>
+
+</div>
+
+         <!-- محتوى الصفحة -->
+        <div class="agent-statement">
+            <h5 class="text-center">كشف حساب : </h5>
+            <p class="text-center"><i class="fas fa-calendar-alt"></i> من تاريخ: {{ start }} <i class="fas fa-calendar-alt"></i> إلى تاريخ: {{ end }}</p>
+        </div>
+
+        <div class="table-responsive" style="margin-left: auto;margin-right: auto">
+            <table id="agent_statement_table" class=" " style="border-radius: 6px;overflow: hidden">
+                <thead style="background-color: silver">
+                    <tr>
+                        <th scope="col">رقم الحركة</th>
+                        <th scope="col">تاريخ العملية</th>
+                        <th scope="col">وقت العملية</th>
+                        <th scope="col">نوع العملية</th>
+                        <th scope="col">المبلغ</th>
+                        <th scope="col">الرصيد السابق</th>
+                        <th scope="col">الرصيد الحالي</th>
+                        <th scope="col">رقم الفاتورة</th>
+                        <th scope="col">الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in agent_transactions %}
+                    <tr>
+                        <td>{{ transaction.id }}</td>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.time }}</td>
+                    {% if transaction.get_transaction_type_display == 'Purchase' %}
+                        <td>شراء</td>
+                    {% else %}
+                    <td>دفع</td>
+                    {% endif %}
+                        <td>{{ transaction.amount|intcomma }}</td>
+                        <td>{{ transaction.balance_last|intcomma }}</td>
+                        <td>{{ transaction.balance|intcomma }}</td>
+                        {% if transaction.invice_n %}
+                        <td>{{ transaction.invice_n }}</td>
+                        {% else %}
+                        <td>-</td>
+                        {% endif %}
+                    {% if transaction.note %}
+                        <td style="white-space: pre-wrap;background-color: #f3d59f;font-size: 12px">{{ transaction.note }}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">لا توجد عمليات مسجلة.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+             <tfoot>
+            <tr>
+                <td colspan="7" class="text-right">المبلغ الأجمالي:</td>
+                <td colspan="2" class="text-center">{{ last|intcomma }}</td>
+            </tr>
+        </tfoot>
+            </table>
+        </div>
+    </div>
+ <div style="display: flex; justify-content: space-between; margin-top: 2px; padding: 10px">
+    <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-phone" style="color: #4CAF50;"></i>
+        رقم المبيعات: {{ Company.phone }}
+    </p>
+    <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-envelope" style="color: #2196F3;"></i>
+        البريد الإلكتروني: {{ Company.email }}
+    </p>
+          <p style="text-align: center; border: 1px solid black; border-radius: 5px; padding-right: 6px; background-color: #f2f2f2;font-size: 15px">
+        <i class="fas fa-map-marker-alt"></i> عنوان: {{ Company.address }}
+    </p>
+  </div>
+
+
+
+</body>
+</html>
+</body>
+</html>

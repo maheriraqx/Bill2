@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block hed %}
+     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+{% endblock %}
+{% block css %}
+    <style>
+  /* تصغير حجم الخط للجدول */
+  .table td, .table th {
+    font-size: 0.90rem;
+    padding: .5rem; /* تقليل الحشو لجعل الصفوف أكثر ضيقًا */
+  }
+
+  /* تعديلات على نموذج البحث */
+  .search-form .form-label {
+    margin-bottom: 0.5rem;
+  }
+
+  .search-form .form-control {
+    margin-bottom: 0.5rem; /* تقليل المسافة بين الحقول */
+  }
+
+  .search-form button {
+    width: 100%; /* جعل زر البحث بعرض الحقل */
+  }
+
+  @media (min-width: 768px) {
+    .search-form {
+      display: flex;
+      align-items: center;
+      gap: 1rem; /* إضافة فجوة بين العناصر */
+    }
+
+    .search-form .form-control,
+    .search-form button {
+      margin-bottom: 0; /* إزالة المسافة السفلية عند العرض الأوسع */
+    }
+  }
+
+    /* تصميم خاص لمربع البحث وأدوات الفلترة */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .filter-bar > * {
+    flex: 1;
+    min-width: 140px; /* حد أدنى للعرض للحفاظ على الشكل عند التصغير */
+  }
+  /* تصميم للرصيد الحالي */
+</style>
+<style>
+.modal-dialog {
+  max-width: 800px; /* تعديل العرض الأقصى للنافذة المنبثقة */
+}
+
+.modal-content {
+  border-radius: 10px; /* جعل الحواف مدورة */
+  box-shadow: 0 5px 15px rgba(0,0,0,.5); /* إضافة ظل للنافذة */
+}
+
+.form-control {
+  border-radius: 5px; /* جعل حواف حقول الإدخال مدورة */
+}
+
+.btn-successd {
+  width: 100%; /* جعل الزر بعرض النافذة */
+  padding: 10px; /* تكبير حجم الزر */
+  border-radius: 5px; /* جعل حواف الزر مدورة */
+  font-size: 1.2rem; /* تكبير حجم الخط للزر */
+}
+th ,td {
+    font-size: 13px;
+}
+</style>
+{% endblock %}
+
+
+
+
+{% block con %}
+
+    <form class="filter-bar mb-3" action="{% url 'invoice_list' %}" method="get">
+      <input type="date" class="form-control" value="{{ min_date_str }}" id="minDate" name="min_date" placeholder="تاريخ البداية">
+      <input type="date" class="form-control" value="{{ max_date_str }}" name="max_date" id="maxDate"  placeholder="تاريخ النهاية">
+      <input type="text" class="form-control" id="searchBox" name="search"  value="{{ search_query }}" placeholder="ادخل رقم الفاتورة أو اسم الوكيل...">
+      <button class="btn btn-info">بحث</button>
+    </form>
+
+<div style="border: 1px solid rgba(0,0,0,0.86);border-radius: 6px">
+
+<table class="table table-striped" >
+    <thead class="thead-dark" >
+        <tr>
+            <th scope="col">رقم الفاتورة <i class="fas fa-copy" style="color: #FFC107;"></i></th>
+            <th scope="col">اسم الوكيل <i class="fas fa-user" style="color: #17A2B8;"></i></th>
+            <th scope="col">أسم منظم الفاتوره  <i class="fas fa-cash-register" style="color: #17A2B8;"></i></th>
+            <th scope="col">تاريخ الفاتورة <i class="fas fa-calendar-alt" style="color: #28A745;"></i></th>
+            <th scope="col"> المبلغ الأجمالي للفاتوره <i class="fas fa-money-bill" style="color: #20C997;"></i></th>
+             <th scope="col">  الرصيد السابق للوكيل <i class="fas fa-money-bill" style="color: orange;"></i></th>
+            <th scope="col"> الرصيد الحالي للوكيل <i class="fas fa-money-bill" style="color: orangered;"></i></th>
+            <th scope="col">الإجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in invoices %}
+            <tr>
+                <td  style="cursor: pointer;font-weight: bolder;color: orange;padding-left: 10px"> {{ invoice.invoice_number }}</td>
+                <td>{{ invoice.agent }}</td>
+                <td>{{ invoice.admin }}</td>
+                <td>{{ invoice.date}}</td>
+                <td>{{ invoice.total|intcomma }}</td>
+                <td>{{ invoice.balncagentlast|intcomma }}</td>
+                <td>{{ invoice.balncagentafter|intcomma }}</td>
+                <td>
+                    <!-- زر التفاصيل -->
+                    <a href="{% url 'detils' invoice.invoice_number %}" class="btn btn-sm btn-info" style="padding: 3px;text-align: center">
+                        <i class="fas fa-info-circle"></i> تفاصيل
+                    </a>
+
+
+
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+
+
+</table>
+
+</div>
+
+    <!-- Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">تأكيد الحذف</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        هل أنت متأكد من أنك تريد حذف هذه الفاتورة؟
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-info" data-dismiss="modal">إلغاء</button>
+        <a href="" id="confirmDeleteButton" class="btn btn-outline-warning">حذف</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- مودال الدفع -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document"> <!-- تكبير النافذة المنبثقة -->
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="paymentModalLabel"><i class="fas fa-wallet"></i> تسديد فاتورة</h5> <!-- إضافة أيقونة محفظة -->
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- فورم التسديد -->
+        <form id="paymentForm" method="get" action="{% url 'payment' %}">
+
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> اسم الوكيل</label>
+            <p id="agentName" class="font-weight-bold text-primary"></p> <!-- تمييز اسم الوكيل -->
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-money-bill-wave"></i> المبلغ الإجمالي</label>
+            <p id="totalAmount" class="font-weight-bold text-success"></p> <!-- تمييز المبلغ الإجمالي -->
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-coins"></i> المبلغ المتبقي</label>
+            <p id="remainingAmount" class="font-weight-bold text-warning"></p> <!-- تمييز المبلغ المتبقي -->
+          </div>
+          <div class="form-group">
+            <label for="paymentAmount"><i class="fas fa-hand-holding-usd"></i> المبلغ المراد تسديده</label>
+            <input type="number" class="form-control" id="paymentAmount" name="payment_amount" required>
+            <small>المبلغ المتبقي بعد الدفع: <span id="newRemainingAmount" class="font-weight-bold text-info"></span></small> <!-- تمييز المبلغ المتبقي بعد الدفع -->
+          </div>
+            <input id="invoice_number" type="hidden"  name="invoice_number">
+          <button type="submit" class="btn btn-success btn-block"><i class="fas fa-credit-card"></i> تسديد</button> <!-- تكبير الزر وإضافة أيقونة -->
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+
+{% block js %}
+<!-- أضف مكتبة jQuery UI لتفعيل Datepicker -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $(document).ready(function() {
+        // تفعيل Datepicker
+        $(".datepicker").datepicker({
+            dateFormat: "yy-mm-dd", // يمكنك تغيير صيغة التاريخ حسب الحاجة
+            changeMonth: true,
+            changeYear: true
+        });
+
+        // تفعيل DataTables
+        var table = $('.table').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Arabic.json"
+            },
+            searching: false, // إلغاء البحث الافتراضي
+            paging: false // إلغاء الترقيم الافتراضي
+        });
+
+        // البحث اليدوي
+        $('#searchBox').keyup(function(){
+            table.search($(this).val()).draw();
+        });
+
+        // فلترة بناءً على التاريخ
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                var min = $('#minDate').datepicker("getDate");
+                var max = $('#maxDate').datepicker("getDate");
+                var date = new Date(data[2]); // افتراض أن العمود الثالث يحتوي على التاريخ
+
+                if ((min === null && max === null) ||
+                    (min === null && date <= max) ||
+                    (max === null && date >= min) ||
+                    (date >= min && date <= max)) {
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        // إعادة رسم الجدول عند تغيير التواريخ
+        $('#minDate, #maxDate').change(function() {
+            table.draw();
+        });
+    });
+</script>
+    <script>
+
+</script>
+<script>
+$('#paymentModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // الزر الذي تم النقر عليه
+  var invoiceNumber = button.data('invoice');
+  var agentName = button.data('agent');
+  var totalAmount = button.data('total');
+  var remainingAmount = button.data('remaining');
+
+  var modal = $(this);
+  modal.find('#invoice_number').val(invoiceNumber);
+  modal.find('#agentName').text(agentName);
+  modal.find('#totalAmount').text(totalAmount);
+  modal.find('#remainingAmount').text(remainingAmount);
+});
+document.addEventListener('DOMContentLoaded', function () {
+  var paymentAmountInput = document.getElementById('paymentAmount');
+  var remainingAmountDisplay = document.getElementById('remainingAmount');
+  var newRemainingAmountDisplay = document.getElementById('newRemainingAmount');
+
+  // تحويل النص إلى رقم وتحديث العرض
+  function updateRemainingAmount() {
+    var paymentAmount = parseFloat(paymentAmountInput.value) || 0;
+    var remainingAmount = parseFloat(remainingAmountDisplay.textContent) || 0;
+    var newRemainingAmount = remainingAmount - paymentAmount;
+
+    // تحديث العرض بالمبلغ الجديد
+    newRemainingAmountDisplay.textContent = newRemainingAmount.toFixed(2);
+  }
+
+  // إضافة event listener لتغيير حقل الإدخال
+  paymentAmountInput.addEventListener('input', updateRemainingAmount);
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block hed %}
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+{% block css %}
+{% endblock %}
+
+
+{% block con %}
+   <!-- زر إضافة مورد جديد -->
+    <div class="mb-3">
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addSupplierModal">
+        <i class="fas fa-plus"></i> إضافة مورد جديد
+    </button>
+</div>
+
+    <!-- جدول تفاصيل الموردين -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="supler">
+            <thead class="thead-dark">
+    <tr>
+        <th scope="col"><i class="fas fa-building mr-2" style="color: #28a745;"></i>اسم الشركة/التاجر</th>
+        <th scope="col"><i class="fas fa-map-marker-alt mr-2" style="color: #17a2b8;"></i>العنوان</th>
+        <th scope="col"><i class="fas fa-phone mr-2" style="color: #ffc107;"></i>رقم الهاتف</th>
+        <th scope="col"><i class="fas fa-envelope mr-2" style="color: #dc3545;"></i>البريد الإلكتروني</th>
+        <th scope="col"><i class="fas fa-globe mr-2" style="color: #007bff;"></i>الموقع الإلكتروني</th>
+        <th scope="col"><i class="fas fa-money-bill-wave mr-2" style="color: #28a745;"></i>قيمة المشتريات</th>
+        <th scope="col"><i class="fas fa-tools mr-2" style="color: #6c757d;"></i>الإجراءات</th>
+    </tr>
+</thead>
+
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td>{{ supplier.company_name }}</td>
+                    <td>{{ supplier.address }}</td>
+                    <td>{{ supplier.phone_number }}</td>
+                    <td>{{ supplier.email }}</td>
+                    <td>{{ supplier.website }}</td>
+                     <td style="direction: rtl">{{ supplier.total_cost|intcomma}} د.ع</td>
+                    <td>
+
+                    <a style="cursor: pointer;text-align: center" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ supplier.id }}')">
+    <i class="fas fa-trash"></i>
+</a>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1" role="dialog" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document"> <!-- زيادة عرض النافذة -->
+        <div class="modal-content">
+            <div class="modal-header bg-dark">
+                <h5 style="color: white" class="modal-title" id="addSupplierModalLabel"><i style="color: olivedrab" class="fas fa-handshake mr-2"></i>إضافة مورد جديد</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- نموذج إدخال البيانات -->
+                <form id="addSupplierForm"  method="post" action="{% url 'add_supplier' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="companyName"><i class="fas fa-building mr-2" style="color: #28a745;"></i>اسم الشركة/التاجر</label>
+        <input type="text" class="form-control" id="companyName" name="company_name" required>
+    </div>
+    <div class="form-group">
+        <label for="address"><i class="fas fa-map-marker-alt mr-2" style="color: #17a2b8;"></i>العنوان</label>
+        <input type="text"  class="form-control" id="address" name="address" required>
+    </div>
+    <div class="form-group">
+        <label for="phoneNumber"><i class="fas fa-phone mr-2" style="color: #ffc107;"></i>رقم الهاتف</label>
+        <input type="text" class="form-control" id="phoneNumber" name="phone_number" required>
+    </div>
+    <div class="form-group">
+        <label for="email"><i class="fas fa-envelope mr-2" style="color: #dc3545;"></i>البريد الإلكتروني</label>
+        <input type="email" class="form-control" id="email" name="email">
+    </div>
+    <div class="form-group">
+        <label for="website"><i class="fas fa-globe mr-2" style="color: #007bff;"></i>الموقع الإلكتروني</label>
+        <input type="url" class="form-control" id="website" name="website">
+    </div>
+    <div class="form-group">
+        <label for="notes"><i class="fas fa-sticky-note mr-2" style="color: #6c757d;"></i>ملاحظات</label>
+        <textarea class="form-control" id="notes" name="notes"></textarea>
+    </div>
+</form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+                <button type="button"  class="btn btn-primary" onclick="saveSupplierData()">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Modal لتأكيد الحذف -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">تأكيد الحذف</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من أنك تريد حذف هذا المورد؟
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+                <a href="#" class="btn btn-danger" id="confirmDeleteButton">حذف</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready( function () {
+    $('#supler').DataTable({
+         responsive: true
+    });
+});
+
+function saveSupplierData() {
+    // إجراء تحققات بسيطة قبل إرسال النموذج
+    var companyName = document.getElementById('companyName').value;
+    var phoneNumber = document.getElementById('phoneNumber').value;
+
+    if (companyName.trim() === '' || phoneNumber.trim() === '') {
+        alert('يرجى ملء جميع الحقول المطلوبة.');
+        return false; // منع إرسال النموذج
+    }
+
+    // إرسال النموذج
+    document.getElementById('addSupplierForm').submit();
+}
+</script>
+    <script>
+function confirmDelete(supplierId) {
+    var deleteUrl = "{% url 'delete_supplier' 0 %}".replace(0, supplierId);
+    document.getElementById('confirmDeleteButton').href = deleteUrl;
+
+    $('#deleteConfirmationModal').modal('show');
+}
+
+</script>
+
+{% endblock %}

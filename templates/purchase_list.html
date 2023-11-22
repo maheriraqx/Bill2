@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block hed %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+{% block css %}
+{% endblock %}
+
+
+{% block con %}
+
+<h2>قائمة المشتريات</h2>
+<table id="purchaseTable" class="table table-striped ">
+   <thead class="bg-dark bg-gradient">
+    <tr class="bg-dark text-white">
+        <th><i class="fas fa-tag" style="color: #17a2b8;"></i> اسم المنتج</th>
+        <th><i class="fas fa-weight" style="color: #28a745;"></i> الكمية</th>
+        <th><i class="fas fa-money-bill-wave" style="color: #ffc107;"></i> سعر الكارتونه</th>
+        <th><i class="fas fa-calculator" style="color: #dc3545;"></i> التكلفة الإجمالية</th>
+        <th><i class="fas fa-info-circle" style="color: #17a2b8;"></i> تفاصيل</th>
+        <th><i class="fas fa-file-invoice-dollar" style="color: #007bff;"></i> الفاتورة</th>
+        <th><i class="fas fa-calendar-alt" style="color: #6c757d;"></i> التاريخ</th>
+    </tr>
+</thead>
+
+    <tbody>
+        {% for p in purchase %}
+        <tr>
+            <td><img src="{% static 'icon/box.png' %}" style="width: 25px;margin: 5px">{{ p.product_name }}</td>
+            <td>{{ p.quantity }}</td>
+            <td>{{ p.cost_price }}</td>
+            <td>{{ p.total_cost }}</td>
+            <td>
+                <button type="button" class="btn btn-info btn-sm" data-tippy-content="{{ p.note }}">
+                    <i style="color: black" class="fas fa-info-circle"></i>التفاصيل
+                </button>
+            </td>
+            <td>
+               {% if p.invoice %}
+                 <a href="{{ p.invoice.url }}" target="_blank" class="btn btn-warning btn-sm">
+                    <i class="fas fa-file-alt"></i>
+                </a>
+                {% endif %}
+            </td>
+            <td>{{ p.date|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    // كود لتفعيل Tippy.js لجميع العناصر التي لها البيانات 'data-tippy-content'
+    tippy('[data-tippy-content]', {
+        placement: 'top', // يمكنك تغييره إلى 'bottom', 'left', 'right' حسب الرغبة
+        animation: 'shift-away', // يمكنك اختيار الانيميشن المفضل لديك
+    });
+    $(document).ready(function () {
+    // Initialize DataTables
+    $('#purchaseTable').DataTable();
+
+    // Initialize Tippy.js
+    tippy('[data-tippy-content]', {
+        placement: 'top',
+    });
+});
+</script>
+{% endblock %}
+

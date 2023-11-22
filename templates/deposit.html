@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+.card {
+    border-radius: 0.25rem; /* تقريب الحواف */
+    border: none; /* إزالة الحدود */
+}
+
+.form-control {
+    border-radius: 0.25rem; /* تقريب الحواف */
+    border: 1px solid #ced4da; /* تعيين حدود رقيقة */
+}
+
+.btn-success {
+    color: #fff;
+    background-color: #0d701c; /* استخدام لون أخضر مشرق */
+    border-color: #28a745; /* حدود بنفس لون الخلفية */
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d; /* استخدام لون متوسط للحدود والنص */
+}
+
+.btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d; /* تغيير لون الخلفية عند التحويم */
+}
+
+/* تخصيص الظل للبطاقة */
+.shadow {
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15); /* إضافة ظل خفيف */
+}
+
+/* تخصيص النصوص داخل النموذج */
+.form-group label {
+    font-weight: bold; /* جعل الخط غامق */
+}
+
+/* تخصيص التباعد والتنسيق */
+.form-group {
+    margin-bottom: 1rem; /* توفير مسافة بين الحقول */
+}
+
+    </style>
+{% endblock %}
+
+
+
+{% block con %}
+<div class="card my-4 shadow" style="border: 1px solid rgba(0,0,0,0.93)"> <!-- إضافة ظل للبطاقة -->
+    <div class="card-header bg-dark bg-gradient text-white">
+        <i style="color: #ffdd00;" class="fas fa-donate"></i> الإيداع في الصندوق
+    </div>
+      <div  class="alert alert-info" role="alert" style="border-radius: 5px;direction: rtl">
+        <i class="fa fa-wallet" style="color: navy;"></i> الرصيد الحالي في الصندوق: <strong>{{ balancr|intcomma }}</strong> دينار
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'cashbox_deposit_action' %}"> <!-- تأكد من استخدام الطريقة الصحيحة للنموذج -->
+
+            <div class="form-group">
+                <label for="depost-amount">المبلغ</label>
+                <div class="input-group mb-3"> <!-- استخدام مجموعة الإدخال لأيقونة النص -->
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i style="color: green" class="fas fa-coins"></i></span>
+                  </div>
+                  <input name="amount" type="number" class="form-control" id="depost-amount" placeholder="أدخل المبلغ المراد ايداعه" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">ملاحظات</label>
+                <textarea name="notes" class="form-control" id="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="date">التاريخ</label>
+                <input type="text" class="form-control" id="date" value="{{ request_date|date:'Y-m-d' }}" disabled>
+            </div>
+            <div class="form-group text-right">
+                <button type="submit" class="btn btn-success">تأكيد الإيداع</button>
+                <button type="reset" class="btn btn-outline-secondary">إعادة تعيين</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}

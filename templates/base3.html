@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+      <!-- خطوط جوجل للخط "Cairo" -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- خطوط جوجل للخط "Montserrat" -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js/dist/tippy.css" />
+    {% block hed %}{% endblock %}
+    <style>
+        body {
+             font-family: 'Cairo', serif;
+            background-color: #f4f4f4; /* Light grey background for better contrast */
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background-color: #37474F; /* Dark grey background for sidebar */
+        }
+
+        .sidebar .nav-link {
+            color: #FFFFFF; /* White text color for better readability */
+            border-radius: 5px; /* Subtle rounded corners for the nav links */
+            margin: 10px 0; /* More vertical space between nav links */
+            padding: 10px 15px; /* More padding for touch targets */
+            transition: all 0.3s ease-in-out; /* Smooth transition for all hover effects */
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: #1E88E5; /* Bright blue background for hover/active state */
+            color: #FFFFFF;
+            padding-left: 25px; /* Indent text to show an active/hover state */
+        }
+        .sidebar i {
+            color: orange;
+        }
+        .navbar, .footer {
+            background-color: #263238; /* Dark grey background for navbar and footer for uniformity */
+            color: #FFFFFF; /* White text color for readability */
+        }
+
+        /* Subdued icon colors for a more professional look */
+        .fa-home, .fa-boxes, .fa-shopping-cart, .fa-chart-line, .fa-wallet, .fa-cogs {
+            color: #90A4AE; /* Uniform color for icons */
+        }
+
+        /* Adding shadows to navbar and footer for depth */
+        .navbar, .footer {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer styling */
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .navbar-brand {
+    color: #FFFFFF; /* White color for the text */
+    font-size: 1.5em; /* Increase the size of the brand name */
+    display: flex; /* Use flex to align icon and text */
+    align-items: center; /* Align items vertically */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700; /* Montserrat bold for the brand name */
+    font-size: 1.5em; /* Adjust the size as needed */
+    /* Other styles */
+}
+
+.navbar-brand i {
+    margin-right: 0.5em; /* Space between the icon and the text */
+    color: #1E88E5; /* Use the same blue color as the sidebar hover state */
+}
+/* Style adjustments for logout button */
+.btn-outline-secondary {
+    border-color: #fff; /* Set the border color to white */
+}
+
+.btn-outline-secondary:hover {
+    background-color: #fff; /* Change background to white on hover */
+    color: #37474F; /* Change text color to dark grey on hover */
+}
+
+/* Optional: If you want to add some space around the icon inside the button */
+.btn .fas {
+    margin-right: 5px;
+}
+.exitb {
+    color: #ffffff;
+}
+.exitb:hover {
+    color: black;
+}
+
+    </style>
+<style>
+    /* إضافة حدود بين العناصر */
+.nav-link {
+    border-bottom: 1px solid rgba(255, 69, 0, 0.91); /* لون الحد الفاصل */
+    padding: 10px 15px; /* تباعد داخلي مناسب */
+}
+
+/* عند تفعيل القائمة الرئيسية أو الفرعية */
+.nav-link.active, .nav-link.show {
+    background-color: #0d701c; /* تغيير لون الخلفية */
+    color: white; /* تغيير لون النص */
+}
+
+/* للقوائم الفرعية */
+.collapse .nav-link {
+    padding-left: 20px; /* تقليل التباعد للقوائم الفرعية */
+    background-color: #37474F; /* لون خلفية القوائم الفرعية */
+    color: #adb5bd; /* تغيير لون النص للقوائم الفرعية */
+}
+
+/* تغيير لون الأيقونات للقوائم الفرعية */
+.collapse .nav-link i {
+    color: #ffdd00;
+}
+
+/* التأكد من تمييز القائمة الفرعية عند التحويم */
+.collapse .nav-link:hover {
+    background-color: rgba(243, 156, 18, 0.87); /* تغيير لون الخلفية */
+    color: white; /* تغيير لون النص */
+}
+
+/* أنماط إضافية للقائمة الجانبية */
+.sidebar {
+    overflow-y: auto; /* إضافة تمرير إذا كانت القائمة طويلة */
+    background-color: #263238; /* لون الخلفية للقائمة الجانبية */
+    padding-bottom: 10px; /* تباعد في الأسفل */
+}
+
+/* تأثيرات الانتقال للقوائم الفرعية */
+.collapse {
+    transition: all 0.35s ease;
+}
+
+/* تعديل اتجاه السهم عند التوسع */
+.nav-link.collapsed .fa-chevron-right {
+    transform: rotate(90deg);
+    transition: transform 0.35s ease;
+}
+
+/* إزالة الحدود من القائمة الأخيرة */
+.nav-item:last-child .nav-link {
+    border-bottom: none;
+}
+
+</style>
+{% block css %}
+
+
+ {% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-dark bg-gradient" style="border-bottom: #ffffff solid 2px">
+    <a class="navbar-brand" href="#">
+        <img src="{% static 'icon/BILL_BIG.png' %}" style="width: 50px">
+    </a>
+    <div class="ml-auto">
+        <span class="navbar-text text-white">
+            admin@mahmod <i class="fas fa-user-circle"></i>
+        </span>
+        <button class="btn btn-sm btn-outline-secondary  ml-2 exitb" type="button">
+            <i style="color: #f39c12" class="fas fa-sign-out-alt"></i> خروج
+        </button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+<nav class="col-md-3 col-lg-2 d-md-block bg-dark bg-gradient sidebar collapse">
+    <div class="sidebar-sticky pt-3">
+        <ul class="nav flex-column">
+            <!-- قائمة الصفحة الرئيسية -->
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'dashb' %}">
+                    <i class="fas fa-home"></i>
+                    الصفحة الرئيسية
+                </a>
+            </li>
+            <!-- قائمة الصندوق مع القوائم الفرعية -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#cashboxSubmenu" aria-expanded="false" aria-controls="cashboxSubmenu">
+                    <i class="fas fa-wallet"></i>
+                    الصندوق
+                    <i class="fas fa-chevron-right float-right"></i>
+                </a>
+                <div id="cashboxSubmenu" class="collapse">
+                    <ul class="flex-column nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cashbox_statement' %}">
+                                <i style="color: chartreuse;" class="fas fa-file-invoice-dollar"></i> كشف الحساب
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cashbox_withdraw' %}">
+                                <i style="color: chartreuse;  " class="fas fa-hand-holding-usd"></i> السحب
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cashbox_deposit' %}">
+                                <i style="color: chartreuse;" class="fas fa-donate"></i> الإيداع
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- باقي القوائم -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-boxes"></i>
+                    إدارة المخزون
+                </a>
+            </li>
+            <!-- قائمة المبيعات والفواتير مع قائمة فرعية قابلة للتبديل -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#salesSubmenu" aria-expanded="false" aria-controls="salesSubmenu">
+                    <i class="fas fa-shopping-cart"></i>
+                    المبيعات والفواتير
+                    <i class="fas fa-chevron-right float-right"></i>
+                </a>
+                <div id="salesSubmenu" class="collapse">
+                    <ul class="flex-column nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'invoice_list' %}">
+                                <i style="color: chartreuse;" class="fas fa-list"></i> قائمة الفواتير
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_invoice' %}">
+                                <i style="color: chartreuse;" class="fas fa-plus-square"></i> إنشاء فاتورة
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- باقي القوائم الأخرى -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-line"></i>
+                    التقارير والأرباح
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-wallet"></i>
+                    المصروفات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-cogs"></i>
+                    إعدادات النظام
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+
+        <!-- Main content -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 main-content mt-5">
+            {% block con %}
+
+
+
+            {% endblock %}
+        </main>
+    </div>
+</div>
+<!-- Footer -->
+<footer class="footer mt-auto py-3">
+    <div>&copy; 2023 نونو</div>
+</footer>
+
+ <!-- Scripts should be loaded at the end of the body -->
+    <!-- jQuery -->
+  <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+     <script src="https://unpkg.com/tippy.js@6"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom JavaScript -->
+<script>
+$(document).ready(function () {
+    $('.sidebar .submenu > a').click(function () {
+        var $submenu = $(this).next('.collapse');
+        $submenu.collapse('toggle');
+        return false; // لمنع الانتقال إلى رابط الـ href
+    });
+});
+</script>
+<script>
+    $(document).ready(function () {
+    // عند النقر على رابط القائمة الرئيسية
+    $('.nav-item > a.nav-link').not('[data-toggle="collapse"]').on('click', function() {
+        $('.nav-item .collapse').collapse('hide'); // إغلاق جميع القوائم الفرعية
+    });
+
+    // عند النقر على رابط القائمة مع القائمة الفرعية
+    $('.nav-item > a.nav-link[data-toggle="collapse"]').on('click', function() {
+        var target = $(this).data('target');
+        $(target).collapse('toggle'); // تبديل حالة القائمة الفرعية
+        return false; // منع الانتقال لرابط الـ href
+    });
+});
+
+</script>
+{% block js %}{% endblock %}
+</body>
+</html>

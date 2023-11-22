@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block hed %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+{% block css %}
+    <style>
+    .form-group {
+    margin-bottom: 0; /* إزالة الهامش السفلي من مجموعات النموذج */
+}
+
+/* قد تحتاج إلى تعديل الارتفاعات حسب تصميم موقعك */
+.form-control, .btn {
+    height: calc(2.25rem + 2px); /* توحيد ارتفاع مربعات النموذج والأزرار */
+}
+td ,th {
+    white-space: nowrap;
+}
+/* تحسينات على المودال */
+#depositModal .modal-header {
+    background-color: #28a745;
+    color: white;
+}
+#depositModal .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+#depositModal .btn-success:hover {
+    background-color: #218838;
+}
+    </style>
+{% endblock %}
+
+
+{% block con %}
+<div class="container-fluid">
+    <!-- شريط البحث وحقول التاريخ -->
+    <form method="get" class="mb-4" style="direction: rtl">
+    <div class="form-row align-items-end">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="search">بحث عن تاجر</label>
+                <input type="text" id="search" name="search" class="form-control" placeholder="أدخل اسم التاجر..." value="{{ search_query }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="date_from">من تاريخ</label>
+                <input type="date" id="date_from" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="date_to">إلى تاريخ</label>
+                <input type="date" id="date_to" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-info"><i class="fas fa-search"></i> بحث</button>
+        </div>
+    </div>
+</form>
+<!-- زر إضافة تاجر جديد -->
+<div class="mb-3">
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addAgentModal">
+        <i class="fas fa-user-plus"></i> إضافة تاجر جديد
+    </button>
+</div>
+
+
+
+
+
+    <!-- جدول الوكلاء -->
+    <div class="table-responsive" >
+         <table class="table table-bordered table-hover table-sm" id="traidlist" style="border-radius: 6px;overflow: hidden">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col"><i class="fas fa-user" style="color: #007bff;"></i> الاسم</th>
+                <th scope="col"><i class="fas fa-phone" style="color: #28a745;"></i> الهاتف</th>
+                <th scope="col"><i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> العنوان</th>
+                <th scope="col"><i class="fas fa-money-bill-wave" style="color: #ffc107;"></i> مجموع المبيعات</th>
+                <th scope="col"><i class="fas fa-money-bill" style="color: #17a2b8;"></i> المبلغ المدفوع</th>
+                <th scope="col"><i class="fas fa-money-check-alt" style="color: #6c757d;"></i> الرصيد الحالي </th>
+                <th scope="col"><i class="fas fa-money-check-alt" style="color: #933a52;"></i> الأجرائات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for agent in agents %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td><a href="{% url 'invoice_listFilter' agent.name %}">{{ agent.name }}</a></td>
+                <td>{{ agent.phone }}</td>
+                <td>{{ agent.address }}</td>
+                <td>{{ agent.total_purchases|intcomma  }}</td>
+                <td>{{ agent.total_payments|intcomma  }}</td>
+                <td>{{ agent.get_balance|intcomma  }}</td>
+              <td>
+    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editAgentModal" data-id="{{ agent.id }}" data-name="{{ agent.name }}" data-phone="{{ agent.phone }}" data-adress="{{ agent.adress }}">
+        <i class="fas fa-edit"></i> تعديل
+    </button>
+    <a href="{% url 'agent_account_statement' agent.id %}">
+        <button class="btn btn-info btn-sm">
+            <i class="fas fa-file-invoice-dollar"></i> كشف حساب
+        </button>
+    </a>
+    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#depositModal" data-id="{{ agent.id }}" data-balance="{{ agent.get_balance }}">
+        <i class="fas fa-money-bill-wave"></i> إيداع
+    </button>
+              <!-- زر الأرشيف -->
+   <a href="{% url 'ArchiveList' agent.id %}"> <button class="btn btn-secondary btn-sm">
+        <i class="fas fa-archive"></i> أرشيف
+    </button></a>
+    <!-- الشروط لتحديد ما إذا كان الزر مفعلًا أو معطلًا -->
+    {% if agent.get_balance != 0 %}
+        <button class="btn btn-danger btn-sm" disabled>
+            <i class="fas fa-trash-alt"></i> حذف
+        </button>
+    {% else %}
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ agent.id }});">
+            <i class="fas fa-trash-alt"></i> حذف
+        </button>
+    {% endif %}
+</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">لا يوجد تجار لعرضهم.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+    <!-- Modal لإضافة تاجر جديد -->
+<div class="modal fade" id="addAgentModal" tabindex="-1" aria-labelledby="addAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAgentModalLabel">
+                    <i class="fas fa-user-plus" style="color: #28a745;"></i> إضافة تاجر جديد
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- نموذج إضافة تاجر -->
+                <form id="addAgentForm" method="post" action="{% url 'add_agent' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="agentName">
+                            <i class="fas fa-user" style="color: #007bff;"></i> الاسم
+                        </label>
+                        <input type="text" class="form-control" id="agentName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agentPhone">
+                            <i class="fas fa-phone" style="color: #28a745;"></i> الهاتف
+                        </label>
+                        <input type="text" class="form-control" id="agentPhone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="agentAddress">
+                            <i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> العنوان
+                        </label>
+                        <textarea class="form-control" id="agentAddress" name="adress"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" style="color: #fff;"></i> حفظ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal لتعديل بيانات الوكيل -->
+<div class="modal fade" id="editAgentModal" tabindex="-1" aria-labelledby="editAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAgentModalLabel">
+                    <i class="fas fa-user-edit" style="color: #17a2b8;"></i> تعديل بيانات التاجر
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- نموذج تعديل بيانات الوكيل -->
+                <form id="editAgentForm" method="post" action="{% url 'edit_agent' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" id="editAgentId">
+                    <div class="form-group">
+                        <label for="editAgentName"><i class="fas fa-user" style="color: #007bff;"></i> الاسم</label>
+                        <input type="text" class="form-control" id="editAgentName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAgentPhone"><i class="fas fa-phone" style="color: #28a745;"></i> الهاتف</label>
+                        <input type="text" class="form-control" id="editAgentPhone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="editAgentAddress"><i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> العنوان</label>
+                        <textarea class="form-control" id="editAgentAddress" name="adress"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" style="color: #fff;"></i> حفظ التغييرات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal التأكيد على الحذف -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">تأكيد الحذف</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من أنك تريد حذف هذا التاجر؟ لا يمكن التراجع عن هذا الإجراء.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="deleteConfirmButton">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal لإيداع المبلغ -->
+<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-lg" style="border: 1px solid orangered;overflow: hidden;border-radius: 6px">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #191c1b; color: white;overflow: hidden">
+                <h5 class="modal-title" id="depositModalLabel">
+                    <i class="fas fa-hand-holding-usd" style="color: gold;"></i> إيداع للوكيل <!-- أيقونة مناسبة للإيداع -->
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="currentBalance"><i class="fas fa-wallet"></i> الرصيد الحالي:</label>
+                    <p id="currentBalance" style="font-weight: bold;"></p>
+                </div>
+                <div class="form-group">
+                    <label for="newBalance"><i class="fas fa-balance-scale"></i> الرصيد بعد الإيداع:</label>
+                    <p id="newBalance" style="font-weight: bold;"></p>
+                </div>
+
+                <!-- نموذج الإيداع -->
+                <form id="depositForm" method="get" action="{% url 'deposetagent' %}">
+                    <div class="form-group">
+                        <label for="depositAmount" style="font-size: 1.1em;"><i class="fas fa-coins"></i> مبلغ الإيداع:</label>
+                        <input type="number" class="form-control" id="depositAmount" name="amount" required style="height: 2.5rem; font-size: 1.1em;">
+                    </div>
+                    <div class="form-group">
+                        <label for="depositNote" style="font-size: 1.1em;"><i class="fas fa-sticky-note"></i> الملاحظات:</label>
+                        <textarea class="form-control" id="depositNote" name="note" style="height: 4rem; font-size: 1.1em;"></textarea>
+                    </div>
+                    <input type="hidden" name="id" id="agentid">
+                    <button type="submit" class="btn btn-success" style="font-size: 1.1em; width: 100%;">
+                        <i class="fas fa-check" style="color: white;"></i> إيداع
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+
+</script>
+    <script type="text/javascript">
+    $('#editAgentModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // الزر الذي قام بتشغيل النافذة المشروعة
+        var id = button.data('id');
+        var name = button.data('name');
+        var phone = button.data('phone');
+        var adress = button.data('adress');
+
+        var modal = $(this);
+        modal.find('#editAgentId').val(id);
+        modal.find('#editAgentName').val(name);
+        modal.find('#editAgentPhone').val(phone);
+        modal.find('#editAgentAddress').val(adress);
+    });
+
+    function confirmDelete(id) {
+        // أضف كود التأكيد والحذف هنا
+        // على سبيل المثال: إظهار نافذة تأكيد قبل إجراء الحذف
+    }
+</script>
+    <script type="text/javascript">
+    var agentIdToDelete = 0;
+
+    function confirmDelete(agentId) {
+        agentIdToDelete = agentId; // حفظ ID الوكيل المراد حذفه
+        $('#confirmDeleteModal').modal('show'); // إظهار النافذة المشروعة
+    }
+
+    document.getElementById('deleteConfirmButton').onclick = function() {
+        // إجراء الحذف
+        window.location.href = "{% url 'delete_agent' %}?id=" + agentIdToDelete;
+    };
+
+    $(document).ready( function () {
+    $('#traidlist').DataTable({
+         responsive: true
+    });
+});
+</script>
+<script>
+$('#depositModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var agentId = button.data('id');
+    var currentBalance = button.data('balance');
+
+    var modal = $(this);
+    modal.find('#currentBalance').text(currentBalance);
+    modal.find('#newBalance').text(currentBalance); // تعيين الرصيد الجديد بنفس الرصيد الحالي في البداية
+    modal.find('#agentid').val(agentId)
+
+    $('#depositAmount').on('input', function() {
+        var depositAmount = parseInt($(this).val()) || 0; // قراءة القيمة المدخلة أو 0 إذا كانت فارغة
+        var newBalance = currentBalance + depositAmount; // حساب الرصيد الجديد
+        modal.find('#newBalance').text(newBalance); // عرض الرصيد الجديد
+    });
+
+
+});
+
+$('#depositModal').on('hidden.bs.modal', function () {
+    // إعادة تعيين القيم عند إغلاق النافذة المشروعة
+    $('#depositAmount').val('');
+    $('#depositNote').val('');
+    $('#newBalance').text('');
+});
+
+</script>
+{% endblock %}

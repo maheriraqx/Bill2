@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block hed %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block css %}
+      <style>
+    .charts-container {
+    margin: 20px;
+    padding: 15px;
+    background-color: white; /* أو أي لون يتناسب مع التصميم */
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+}
+
+.chart {
+    margin-bottom: 30px;
+        margin-right: auto;
+    margin-left: auto;
+    width: 90%;
+    border-radius: 10px;
+    border: 1px solid green;
+    padding: 10px;
+}
+
+.chart h3 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.chart-img {
+    width: 100%; /* تعديل العرض حسب الحاجة */
+    height: auto; /* للحفاظ على نسب الأبعاد */
+    border-radius: 5px;
+
+}
+
+    </style>
+{% endblock %}
+
+
+{% block con %}
+<div class="chart">
+    <h3><i class="fas fa-chart-line" style="color: #4CAF50;"></i> تقارير الأرباح  اليومية</h3>
+    <img src="{% static 'reports/net_profits_chart.png' %}" alt="تقارير الأرباح  اليومية" class="chart-img">
+    <div class="chart-controls">
+        <i class="fas fa-download control-icon" onclick="downloadChart('net_profits_chart.png')"></i>
+        <i class="fas fa-sync-alt control-icon" ></i>
+    </div>
+</div>
+
+<div class="chart">
+    <h3><i class="fas fa-calendar-alt" style="color: #FF9800;"></i> تقارير الأرباح  الشهرية</h3>
+    <img src="{% static 'reports/monthly_net_profits_chart.png' %}" alt="تقارير الأرباح  الشهرية" class="chart-img">
+    <div class="chart-controls">
+        <i class="fas fa-download control-icon" onclick="downloadChart('monthly_net_profits_chart.png')"></i>
+        <i class="fas fa-sync-alt control-icon" ></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready(function() {
+    $('.chart-img').hover(
+        function() {
+            // عند تحريك الماوس فوق الصورة
+            $(this).css('box-shadow', '0 8px 16px rgba(0, 0, 0, 0.2)');
+        }, function() {
+            // عند إزالة الماوس
+            $(this).css('box-shadow', 'none');
+        }
+    );
+});
+</script>
+   <script>
+function downloadChart(chartName) {
+    window.location.href = `{% static 'reports/' %}` + chartName;
+}
+
+function refreshChart(chartType) {
+    // هنا يمكنك إضافة كود لإعادة تحميل البيانات أو تحديث الصفحة
+    // على سبيل المثال، يمكنك استخدام AJAX لتحديث الرسم البياني دون إعادة تحميل الصفحة
+    alert("Refresh chart: " + chartType);
+}
+</script>
+
+
+
+
+{% endblock %}

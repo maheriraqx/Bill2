@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+ .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.chart-container {
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chart-header h2 {
+    font-size: 1.5em;
+    color: #333333;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+.chart-container {
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.chart-header h2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.5em;
+    color: #333333;
+}
+
+.icon {
+    color: #4a4a4a;
+    font-size: 50px;
+    margin-right: 10px;
+}
+
+.separator {
+    height: 10px;
+    background: linear-gradient(to right, #ff758c 0%, #ff7eb3 100%);
+    margin: 20px 0;
+    border-radius: 1px;
+}
+
+    </style>
+{% endblock %}
+{% block con %}
+ <div class="container" style="padding: 20px">
+        <div class="chart-container">
+            <div class="chart-header">
+
+                <h5 class="bg-dark bg-gradient" style="text-align: center;border: 1px solid orangered;border-radius: 50px;padding: 5px;color: white;margin: 0"> الكميات المباعة خلال الشهر  <i style="color: green;font-size: 30px" class="fas fa-chart-line icon"></i> </h5>
+            </div>
+            <canvas style="max-height: 700px!important;" id="monthlyChart"></canvas>
+        </div>
+      <div style=" background: linear-gradient(to right, #ff758c 0%, #111010 100%);height: 10px;border-radius: 100%;width: 100%;margin: 20px 0" class="separator"></div> <!-- فاصل جمالي -->
+        <div class="chart-container">
+            <div class="chart-header">
+
+                <h5 class="bg-dark bg-gradient" style="text-align: center;border: 1px solid orangered;border-radius: 50px;padding: 5px;color: white;margin: 0"> الكميات المباعة خلال السنة <i style="color: orangered;font-size: 30px" class="fas fa-chart-pie icon"></i> </h5>
+            </div>
+            <canvas style="max-height: 700px!important;" id="annualChart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var monthlySalesData = {{ get_monthly_sold_quantities | safe }};
+            var annualSalesData = {{ get_annual_sold_quantities | safe }};
+
+            function createChart(canvasId, salesData) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+                var sortedData = Object.entries(salesData).sort((a, b) => b[1] - a[1]);
+                var labels = sortedData.map(item => item[0]);
+                var data = sortedData.map(item => item[1]);
+                var backgroundColors = labels.map(() => `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`);
+
+                new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'الكميات المباعة',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    }
+                });
+            }
+
+            createChart('monthlyChart', monthlySalesData);
+            createChart('annualChart', annualSalesData);
+        });
+    </script>
+{% endblock %}

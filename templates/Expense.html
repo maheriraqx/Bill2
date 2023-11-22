@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% block hed %}
+       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+{% block css %}
+{% endblock %}
+
+
+{% block con %}
+<div class="table-responsive">
+    <div class="mb-2" style="direction: rtl">
+    <!-- نموذج البحث مع فلتر التاريخ -->
+    <form action="" method="get" class="row gx-2 gy-2 align-items-center">
+        <div class="col-auto">
+            <label for="search" class="form-label">كلمة البحث:</label>
+        </div>
+        <div class="col">
+            <input type="text" id="search" name="search" class="form-control" placeholder="بحث...">
+        </div>
+        <div class="col-auto">
+            <label for="date_from" class="form-label">من تاريخ:</label>
+        </div>
+        <div class="col">
+            <input type="date" id="date_from" name="date_from" class="form-control">
+        </div>
+        <div class="col-auto">
+            <label for="date_to" class="form-label">إلى تاريخ:</label>
+        </div>
+        <div class="col">
+            <input type="date" id="date_to" name="date_to" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">بحث</button>
+        </div>
+    </form>
+
+
+    <!-- زر إضافة مصروف جديد -->
+<div class="d-flex justify-content-end mt-2">
+    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#addExpenseModal">
+        <i class="fas fa-plus"></i> أضف مصروف جديد
+    </button>
+</div>
+
+</div>
+
+    <table class="table table-bordered" id="expense">
+        <thead class="thead-dark">
+    <tr>
+        <th scope="col"><i class="fas fa-file-alt" style="color: #1E88E5;"></i> الوصف</th>
+        <th scope="col"><i class="fas fa-money-bill-wave" style="color: #4CAF50;"></i> المبلغ</th>
+        <th scope="col"><i class="fas fa-calendar-alt" style="color: #FFC107;"></i> التاريخ</th>
+        <th scope="col"><i class="fas fa-tags" style="color: #f44336;"></i> التصنيف</th>
+        <th scope="col"><i class="fas fa-user" style="color: #9C27B0;"></i> المنفق</th>
+        <th scope="col"><i class="fas fa-sticky-note" style="color: #03A9F4;"></i> ملاحظات</th>
+        <th scope="col"><i class="fas fa-tools" style="color: #607D8B;"></i> الإجراءات</th>
+    </tr>
+</thead>
+
+        <tbody>
+            {% for expense in Expense %}
+            <tr>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.spent_by }}</td>
+                <td>
+                    <button class="btn btn-info btn-sm" data-tippy-content="{{ expense.notes }}">
+                        <i class="fas fa-sticky-note"></i>
+                    </button>
+                </td>
+                <td>
+
+
+    <!-- الشرط لعرض الزر بناءً على حالة المصروف -->
+    {% if expense.spent == True %}
+          <!-- زر الحذف -->
+    <button class="btn btn-danger btn-sm" title="حذف" disabled>
+        <i class="fas fa-trash-alt"></i>
+    </button>
+        <!-- زر مقفول لأن المصروف مستقطع بالفعل -->
+        <button style="width: 100px;text-align: center" class="btn btn-secondary btn-sm" title="مستقطع" disabled>
+            <i class="fas fa-lock"></i>تم الصرف
+        </button>
+
+    {% else %}
+     <a href="#" class="btn btn-danger btn-sm" title="حذف" data-toggle="modal" data-target="#deleteConfirmationModal" data-expense-id="{{ expense.id }}">
+    <i class="fas fa-trash-alt"></i>
+</a>
+
+<button style="width: 100px;text-align: center" class="btn btn-warning btn-sm" title="تحديد كمستقطع" data-toggle="modal" data-target="#confirmSpendingModal" data-expense-id="{{ expense.id }}">
+    <i class="fas fa-money-bill-wave"></i> صرف
+</button>
+
+
+
+    {% endif %}
+                {% if expense.invoice_file %}
+        <a title="تحميل الفاتوره" href="{{ expense.invoice_file.url }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-file"></i>
+        </a>
+    {% else %}
+        <button title="لا توجد فاتوره" class="btn btn-secondary btn-sm" disabled>
+            <i class="fas fa-file"></i>
+        </button>
+    {% endif %}
+</td>
+
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+     <tfoot style="direction: rtl">
+        <tr>
+            <th colspan="5" style="text-align: right;">المجموع</th>
+            <th colspan="2">{{ total_expenses }}</th>
+        </tr>
+    </tfoot>
+    </table>
+</div>
+
+  <!-- النافذة المنبثقة لإضافة مصروف جديد -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" role="dialog" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addExpenseModalLabel">
+                    <i class="fas fa-plus-circle" style="color: #28a745;"></i> أضف مصروف جديد
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form  action="{% url 'add_expense' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="category">
+                            <i class="fas fa-tags" style="color: #f44336;"></i> التصنيف
+                        </label>
+                        <select class="form-control" id="category" name="category">
+                            <option value="">اختر...</option>
+                            <option value="أجور عمال">أجور عمال</option>
+                            <option value="شراء أدوات">شراء أدوات</option>
+                            <option value="مصاريف إدارية">مصاريف إدارية</option>
+                            <option value="مصاريف تسويق">مصاريف تسويق</option>
+                            <option value="مصاريف تقنية">مصاريف تقنية</option>
+                            <option value="مصاريف السفر">مصاريف السفر</option>
+                            <option value="الأجهزة والمعدات">الأجهزة والمعدات</option>
+                            <option value="خدمات مهنية">خدمات مهنية</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">
+                            <i class="fas fa-money-bill-wave" style="color: #4CAF50;"></i> المبلغ
+                        </label>
+                        <input type="number" class="form-control" id="amount" name="amount" required step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">
+                            <i class="fas fa-sticky-note" style="color: #03A9F4;"></i> ملاحظات
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="invoice_file">
+                            <i class="fas fa-file-invoice" style="color: #FFC107;"></i> فاتوره او وصل اثبات ان وجد
+                        </label>
+                        <input type="file" class="form-control-file" id="invoice_file" name="invoice_file">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times-circle" style="color: #dc3545;"></i> إغلاق
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save" style="color: #fff;"></i> حفظ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmSpendingModal" tabindex="-1" role="dialog" aria-labelledby="confirmSpendingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmSpendingModalLabel">تأكيد الصرف</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                تحذير: لا يمكن الحذف أو التعديل بعد هذه العملية. هل أنت متأكد أنك تريد المتابعة؟ لا تراجع بعد هذه العملية.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-warning" id="confirmSpendingButton">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmation for Deletion -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">
+                    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> تأكيد الحذف
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من أنك تريد حذف هذا المصروف؟ لا يمكن التراجع عن هذا الإجراء.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    // كود لتفعيل Tippy.js لجميع العناصر التي لها البيانات 'data-tippy-content'
+    tippy('[data-tippy-content]', {
+        placement: 'top', // يمكنك تغييره إلى 'bottom', 'left', 'right' حسب الرغبة
+        animation: 'shift-away', // يمكنك اختيار الانيميشن المفضل لديك
+    });
+    $(document).ready(function () {
+    // Initialize DataTables
+    $('#expense').DataTable();
+
+    // Initialize Tippy.js
+    tippy('[data-tippy-content]', {
+        placement: 'top',
+    });
+});
+</script>
+<script type="text/javascript">
+    // هذا الكود يجب أن يكون ضمن العنصر الذي يفتح النافذة المنبثقة
+    // للحصول على الخاصية data-expense-id وتمريرها إلى الزر داخل النافذة المنبثقة
+    $('[data-toggle="modal"]').click(function() {
+        var expenseId = $(this).data('expense-id'); // استخدم jQuery للحصول على الخاصية data-expense-id
+        // تعيين خاصية data-expense-id إلى الزر داخل النافذة المنبثقة
+        $('#confirmSpendingButton').data('expense-id', expenseId);
+    });
+
+    // هذا الكود يجب أن يكون خارج الدالة السابقة ويتعامل مع النقر على الزر "تأكيد"
+    $('#confirmSpendingButton').click(function() {
+        var expenseId = $(this).data('expense-id'); // استخدم jQuery للحصول على الخاصية data-expense-id
+        var url = '/editexpense/' + expenseId; // بناء الـ URL بشكل ديناميكي
+        window.location.href = url; // إعادة توجيه المستخدم
+    });
+</script>
+<script type="text/javascript">
+    // تعيين الـ ID إلى الزر داخل النافذة المنبثقة للحذف
+    $('[data-toggle="modal"]').click(function() {
+        var expenseId = $(this).data('expense-id');
+        $('#confirmDeleteButton').data('expense-id', expenseId); // تعيين الـ ID للزر داخل النافذة المنبثقة للحذف
+    });
+
+    // إعادة توجيه المستخدم للقيام بعملية الحذف عند تأكيد الحذف
+    $('#confirmDeleteButton').click(function() {
+        var expenseId = $(this).data('expense-id');
+        var url = '/delete_expense/' + expenseId; // يجب أن يكون لديك مسار مماثل في urls.py
+        window.location.href = url;
+    });
+</script>
+{% endblock %}
