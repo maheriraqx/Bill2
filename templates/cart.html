@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block hed %}{% endblock %}
+{% block css %}
+    <style>
+    .card-img-top {
+    height: 250px; /* تحديد ارتفاع الصور */
+    object-fit: cover; /* ضمان تغطية المساحة دون تشويه الصورة */
+}
+
+.card {
+    height: 100%; /* تحديد ارتفاع البطاقة */
+}
+
+    </style>
+{% endblock %}
+
+
+{% block con %}
+    <div class="mb-3">
+    <form action="" method="get" class="form-inline">
+        <div class="input-group">
+            <input type="text" class="form-control" name="product_name" placeholder="ابحث عن المنتج..." aria-label="ابحث عن المنتج">
+            <select class="custom-select" name="category" aria-label="اختر الصنف">
+                <option value="">اختر الصنف...</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> بحث</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+   <div class="mb-3">
+    <input type="text" class="form-control" id="quick-search" placeholder="فلترة سريعة للمنتجات..." aria-label="فلترة سريعة">
+</div>
+
+<div class="row">
+    {% for product in products %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100"  data-stock="{{ product.quantity_in_stock }}" data-price="{{ product.sale_price }}" data-product-id="{{ product.id }}">
+                <img class="card-img-top" src="{{ product.product_image.url }}" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text"><i class="fas fa-tags"></i> سعر البيع: {{ product.sale_price_after_discount |intcomma}}</p>
+                    <p class="card-text"><i class="fa fa-shopping-cart" style="color: green"> </i><i class="fa fa-minus"></i>  الخصم: % {{ product.discount_percentage}} </p>
+                    <p class="card-text" style="color: {% if product.quantity_in_stock > 0 %} green {% else %} red {% endif %}"><i class="fas fa-boxes"></i> الكمية: {{ product.quantity_in_stock }}</p>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-outline-secondary btn-minus" type="button"><i class="fas fa-minus"></i></button>
+                        </div>
+                        <input type="text" class="form-control xcount" value="1">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary btn-plus" type="button"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <a style="font-size: 15px;padding: 3px;text-align: center" href="#" class="btn btn-primary {% if product.is_available %} '' {% else %}disabled {% endif %}"><i class="fas fa-cart-plus"></i> أضف إلى العربة</a>
+                    <button style="font-size: 15px;padding: 3px;text-align: center" class="btn btn-info" data-tippy-content="{{ product.description }}"><i class="fas fa-info-circle"></i> تفاصيل</button>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted"><i class="fas fa-calendar-alt"></i> أضيف في: {{ product.date_added }}</small>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script>
+
+
+    document.getElementById('quick-search').addEventListener('input', function () {
+        var searchText = this.value.toLowerCase();
+        document.querySelectorAll('.card').forEach(function (card) {
+            var productName = card.querySelector('.card-title').textContent.toLowerCase();
+            if (productName.includes(searchText)) {
+                card.parentElement.style.display = '';
+            } else {
+                card.parentElement.style.display = 'none';
+            }
+        });
+    });
+</script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-plus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var inputField = this.parentElement.parentElement.querySelector('input');
+            var card = this.closest('.card');
+            var stock = parseInt(card.dataset.stock);
+
+            if (parseInt(inputField.value) < stock) {
+                inputField.value = parseInt(inputField.value) + 1;
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-minus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var inputField = this.parentElement.parentElement.querySelector('input');
+            if (parseInt(inputField.value) > 1) {
+                inputField.value = parseInt(inputField.value) - 1;
+            }
+        });
+    });
+     tippy('.btn-info', {
+            content(reference) {
+                return reference.getAttribute('data-tippy-content');
+            },
+            // يمكنك تعديل هذه الخيارات حسب الحاجة
+            placement: 'top',
+            animation: 'fade',
+        });
+});
+
+    </script>
+
+{% endblock %}
